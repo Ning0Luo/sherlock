@@ -2094,16 +2094,17 @@ const Engine = (() => {
       const labels = [...new Set(resNames.flatMap(r => res[r].labels))];
       policies = labels.map(l => ({ name: `${l} stays on this machine`, kind: 'no_flow', label: l }));
     }
-    policies = policies.map(p => ({ ...p, targets: p.kind === 'no_flow' ? (p.to ? match(p.to) : new Set(resNames.filter(r => res[r].sink))) : null }));
+    policies = policies.map(p => ({ ...p, targets: p.kind === 'no_flow' ? (p.to ? match(p.to) : new Set(resNames.filter(r => res[r].sink))) : null,
+      src: p.sources ? new Set(p.sources) : null, srcKey: p.sources ? [...p.sources].sort().join('|') : '*' }));
     return { agents, gates, res, resNames, policies, idx, generated: d.generated };
   }
-  function analyze(m, C, G, agentic) {
+  function analyze(m, C, G, agentic, sources) {
     const R = m.agents.map(a => new Set(a.r)), W = m.agents.map(a => new Set(a.w));
     m.gates.forEach((g, j) => { if (G >> j & 1) { g.r.forEach(x => R[g.agent].add(x)); g.w.forEach(x => W[g.agent].add(x)); } });
     const cor = new Map();
     m.agents.forEach((a, i) => { if ((C >> i & 1) && !a.trusted) cor.set(i, { why: 'hack' }); });
     const taint = new Map();
-    m.resNames.forEach(r => { if (m.res[r].untrusted) taint.set(r, { why: 'source' }); });
+    m.resNames.forEach(r => { if (m.res[r].untrusted && (!sources || sources.has(r))) taint.set(r, { why: 'source' }); });
     const lab = {};
     m.resNames.forEach(r => { lab[r] = new Map(m.res[r].labels.map(l => [l, { why: 'origin' }])); });
     let ch = true;
@@ -2150,8 +2151,12 @@ const Engine = (() => {
     for (const [C, G, t, h] of pairs) {
       const todo = m.policies.map((_, k) => !front[k].some(p => p.t <= t && p.h <= h));
       if (!todo.some(Boolean)) continue;
-      const res = analyze(m, C, G, agentic);
-      m.policies.forEach((p, k) => { if (!todo[k]) return; const tg = violated(m, p, res); if (tg) front[k].push({ t, h, C, G, res, target: tg }); });
+      const cache = {};                       // one spread per attacker definition
+      m.policies.forEach((p, k) => {
+        if (!todo[k]) return;
+        const res = cache[p.srcKey] || (cache[p.srcKey] = analyze(m, C, G, agentic, p.src));
+        const tg = violated(m, p, res); if (tg) front[k].push({ t, h, C, G, res, target: tg });
+      });
     }
     front.forEach(f => f.sort((a, b) => a.t - b.t || a.h - b.h));
     return { front, complete: cap === bits };
@@ -2165,12 +2170,12 @@ const Engine = (() => {
     const n = hackable.length, g = m.gates.length, tt = Math.min(t, n), hh = Math.min(h, g);
     const combos = (N, K) => { const out = []; const rec = (s, acc) => { if (acc.length === K) { out.push(acc.slice()); return; } for (let i = s; i < N; i++) { acc.push(i); rec(i + 1, acc); acc.pop(); } }; rec(0, []); return out; };
     const p = m.policies[k];
-    const { targets, ...rule } = p;
+    const { targets, src, srcKey, ...rule } = p;
     const invariants = [];
     for (const cs0 of combos(n, tt)) for (const gs of combos(g, hh)) {
       const cs = cs0.map(j => hackable[j]);
       const C = cs.reduce((x, i) => x | (1 << i), 0), G = gs.reduce((x, j) => x | (1 << j), 0);
-      const res = analyze(m, C, G, true);
+      const res = analyze(m, C, G, true, p.src);
       if (violated(m, p, res)) return null;
       const labels = {};
       m.resNames.forEach(r => { if (res.lab[r].size) labels[r] = [...res.lab[r].keys()].sort(); });
@@ -2379,7 +2384,7 @@ const cost = p => !p ? 'never' : p.t === 0 && p.h === 0 ? 'FREE' : [p.t ? `${p.t
 
 function path(m, p, pt) {      // the attack as steps, plus which diagram nodes it touches
   const steps = [], hit = new Set(), res = pt.res, seenA = new Set(), seenR = new Set();
-  const NAME = { account: 'account agent' }, T = i => NAME[m.agents[i].id] || m.agents[i].id;
+  const NAME = { account: 'account agent', auth: 'login step' }, T = i => NAME[m.agents[i].id] || m.agents[i].id;
   const where = r => r === 'web' ? 'a web page' : r === 'state:messages' ? 'the customer message' : r.replace('state:', '');
   const mark = r => NODE_OF[r] && hit.add(NODE_OF[r]);
   m.gates.forEach((g, j) => { if (pt.G >> j & 1) { steps.push(`You click Allow on the ${T(g.agent)}'s ${g.name.replace('tool:', '')}.`); hit.add('email'); } });
@@ -2387,7 +2392,7 @@ function path(m, p, pt) {      // the attack as steps, plus which diagram nodes 
     if (w.why === 'hack') steps.push(`The attacker breaks into the ${T(i)}.`);
     else { taint(w.res); steps.push(`The ${T(i)} reads ${where(w.res)} and follows the attacker's text.`); } };
   const taint = r => { if (seenR.has(r)) return; seenR.add(r); mark(r); const w = res.taint.get(r);
-    if (w.why === 'source') steps.push(r === 'web' ? 'An attacker plants text on a web page.' : `The attacker writes the ${r.replace('state:', '')}.`);
+    if (w.why === 'source') steps.push(r === 'web' ? 'An attacker plants text on a web page.' : r === 'state:messages' ? 'The attacker sends the bot a message.' : `The attacker writes ${where(r)}.`);
     else if (w.why === 'written') { agent(w.agent); hit.add(m.agents[w.agent].id); }
     else { taint(w.from); hit.add(m.agents[w.agent].id); steps.push(`The ${T(w.agent)} passes it on to ${where(r)} as its normal job.`); } };
   if (p.kind === 'hijack') agent(m.idx[p.agent]);
@@ -2433,7 +2438,7 @@ $('lg-rules').addEventListener('click', e => { const b = e.target.closest('[data
 // ---- the walkthrough: each scene sets the fixes and a rule, then explains ----
 const SCENES = [
   ['000', 0, 'This is a support bot built with <i>LangGraph</i>: a router, a researcher that searches the web, an account agent that reads customer records, a writer, and an email tool.'],
-  ['000', 0, 'As usually written, every node shares one message list and email sends without asking. Sherlock finds a <b>free</b> attack: text on a web page reaches the writer, which emails customer data out.'],
+  ['000', 0, 'As usually written, every node shares one message list and email sends without asking. Sherlock finds a <b>free</b> attack: the attacker\'s text in the conversation steers the account agent and the writer, which emails customer data out.'],
   ['000', 2, 'It also finds that a customer\'s own message can steer the account agent into looking up <b>someone else\'s record</b>. Also free.'],
   ['100', 1, 'Fix 1: give each node only the state keys it needs (<i>input_schema</i>). Web text can no longer reach the account agent: that attack now needs a <i>hacked agent</i>.'],
   ['110', 0, 'Fix 2: ask before sending email (<i>interrupt_before</i>). Customer data can now leave only if <i>you click Allow</i>, so the reviewer is the last line of defense.'],
