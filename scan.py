@@ -340,42 +340,42 @@ def claude_code_agent(path: str | None, layers, entry: dict, mode_override: str 
         if tool == "Bash":
             if arg in ("", "*", ":*"):
                 open_gate(f, "shell")
-                granted.append(f"{rule} ({label}): any shell command without asking")
+                granted.append(f"{safe_rule(rule)} ({label}): any shell command without asking")
             else:
                 rights, desc = shell_rights(arg, proj if path else "proj:*")
                 if "shell" in f.ask or not sandbox.get("enabled"):
                     f.read += rights["read"]
                     f.write += rights["write"]
-                granted.append(f"{rule} ({label}): {desc}")
+                granted.append(f"{safe_rule(rule)} ({label}): {desc}")
         elif tool in ("Read", "Glob", "Grep", "LS"):
             places = path_places(arg, proj) if arg else ["*"]
             f.read += places
-            granted.append(f"{rule} ({label}): reads {', '.join(places)}")
+            granted.append(f"{safe_rule(rule)} ({label}): reads {', '.join(places)}")
         elif tool in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
             places = path_places(arg, proj) if arg else list(edit_w)
             f.write += places
             if not arg or arg in ("*", "**"):
                 f.ask.pop("edit", None)
-            granted.append(f"{rule} ({label}): edits {', '.join(places)}")
+            granted.append(f"{safe_rule(rule)} ({label}): edits {', '.join(places)}")
         elif tool in ("WebFetch", "WebSearch"):
             f.read.append("web")
             f.write.append("net")
             if not arg:
                 f.ask.pop("web", None)
-            granted.append(f"{rule} ({label}): reads web pages and sends requests out")
+            granted.append(f"{safe_rule(rule)} ({label}): reads web pages and sends requests out")
         elif tool.startswith("mcp__"):
             srv = tool[5:].split("__", 1)[0]
             g = f"mcp:{srv}"
             if g in f.ask:
                 open_gate(f, g)
-            granted.append(f"{rule} ({label}): uses MCP server {srv} without asking")
+            granted.append(f"{safe_rule(rule)} ({label}): uses MCP server {srv} without asking")
         elif tool.startswith("mcp__claude-in-chrome") or tool == "Chrome":
             open_gate(f, "chrome")
-            granted.append(f"{rule} ({label}): drives your Chrome without asking")
+            granted.append(f"{safe_rule(rule)} ({label}): drives your Chrome without asking")
     for rule in deny:
         tool, arg = rule_arg(rule)
         if tool == "Read" and secret_for_path(arg):
-            f.notes.append(f"deny {rule}: blocks the Read tool only; approved shell commands can still read it")
+            f.notes.append(f"deny {safe_rule(rule)}: blocks the Read tool only; approved shell commands can still read it")
         elif tool in ("WebFetch", "WebSearch") and not arg:
             f.ask.pop("web", None)
         elif tool.startswith("mcp__"):
@@ -385,7 +385,7 @@ def claude_code_agent(path: str | None, layers, entry: dict, mode_override: str 
     for rule in ask:
         tool, _ = rule_arg(rule)
         if tool == "Bash":
-            f.notes.append(f"ask {rule}: still asks before this command")
+            f.notes.append(f"ask {safe_rule(rule)}: still asks before this command")
 
     if mode == "acceptEdits":
         open_gate(f, "edit")
@@ -410,6 +410,14 @@ def claude_code_agent(path: str | None, layers, entry: dict, mode_override: str 
     if f.ask:
         f.notes.append("asks before: " + ", ".join(sorted(f.ask)))
     return f
+
+
+def safe_rule(rule: str) -> str:
+    """A permission rule as shown in notes: home folder as ~, token-like strings hidden, short."""
+    import re as _re
+    r = rule.replace("/" + str(HOME), "~").replace(str(HOME), "~").replace("//Users/", "/Users/")
+    r = _re.sub(r"[A-Za-z0-9_\-+/=]{24,}", "<hidden>", r)
+    return r if len(r) <= 90 else r[:87] + "..."
 
 
 def path_title(path: str | None) -> str:
@@ -616,9 +624,7 @@ def main() -> None:
                       for r, x in s.resources.items()},
         "policies": [{k: v for k, v in p.__dict__.items() if v is not None} for p in s.policies],
     }
-    text = json.dumps(out, indent=1)
-    if str(Path.home()) in text:
-        sys.exit("refusing to print: output would contain your home path")
+    text = json.dumps(out, indent=1).replace(str(Path.home()), "~")
     print(text)
 
 
