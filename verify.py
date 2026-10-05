@@ -75,6 +75,8 @@ def main() -> None:
     flows = {a: [(match([s]), match([d])) for s, d in agents[a].get("flows") or []] for a in ids}
     controls = {r: set(res[r].get("controls") or []) for r in names}
     untrusted = {r for r in names if res[r].get("untrusted")}
+    if rule.get("sources"):                  # the rule names who the attacker is
+        untrusted &= set(rule["sources"])
     origin = {r: set(res[r].get("labels") or []) for r in names}
     sinks = {r for r in names if res[r].get("sink")}
 

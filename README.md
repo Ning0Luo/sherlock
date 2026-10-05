@@ -46,6 +46,10 @@ pbpaste | python3 <(curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlo
 
 A web page hides instructions. Cursor reads the page and writes them into `AGENTS.md`. Codex and Claude Code both obey that file. Codex copies the SSH key into the project, and Claude Code sends it out. The attacker hacks no agent, and you approve no prompt.
 
+## LangGraph demo
+
+The site also checks a LangGraph app live. Toggle three fixes on an example support bot and watch the rules, their costs and the attack path change. The page uses the same checker as your Mac scan.
+
 ## How it works
 
 1. **Rules.** You write rules like `never ssh -> internet`. Each rule has a budget: the number of hacked agents and Allow clicks it must survive.
