@@ -300,7 +300,15 @@ footer p { max-width: 52rem; }
 /* type: a Dutch-style serif for headlines, so tighten nothing and use lining figures */
 h1, h2 { letter-spacing: -0.005em; font-weight: 700; }
 h1, h2, .stat b, .big, .scan-head h3 { font-variant-numeric: lining-nums; }
-</style>
+
+.lg-player { display: flex; gap: 0.8rem; align-items: center; }
+.lg-progress { flex: 1; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.lg-progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.3s linear; }
+.lg-sub { min-height: 3.4em; font-size: 1rem; line-height: 1.5; color: var(--ink); background: rgba(12,9,6,0.85); border-left: 3px solid var(--accent); padding: 0.55rem 0.8rem; border-radius: 0.3rem; }
+.lg-sub b { color: var(--attack); font-weight: 600; }
+.lg-sub i { color: var(--accent); font-style: normal; font-weight: 600; }
+#lg-demo .lg-toggles label.flash { color: var(--accent); }
+
 
 <style>body{margin:0}</style>
 </head>
@@ -475,7 +483,12 @@ h1, h2, .stat b, .big, .scan-head h3 { font-variant-numeric: lining-nums; }
           <label><input type="checkbox" id="fx-approval"> Email needs your approval <span class="mono">interrupt_before</span></label>
           <label><input type="checkbox" id="fx-session"> Customer ID comes from the login, not the message</label>
         </div>
+        <div class="lg-player">
+          <button type="button" class="btn sm" id="lg-play" aria-label="Play the walkthrough">▶ Play walkthrough</button>
+          <div class="lg-progress" aria-hidden="true"><span id="lg-bar"></span></div>
+        </div>
         <svg id="lg-svg" viewBox="0 0 760 300" role="img" aria-label="The support bot graph, with the selected attack path highlighted"></svg>
+        <p class="lg-sub" id="lg-sub" aria-live="polite">Press play for a one-minute walkthrough, or toggle the fixes yourself.</p>
         <div class="lg-rules" id="lg-rules"></div>
         <ol class="steps" id="lg-steps"></ol>
         <p class="muted" style="font-size:0.82rem">Computed live in your browser by the same checker as above, from the LangGraph code exported with <span class="mono">export(app)</span>. Cost = agents an attacker must hack + times you must click Allow.</p>
@@ -2414,9 +2427,56 @@ function render() {
   }
   $('lg-svg').innerHTML = h;
 }
-['fx-scoped', 'fx-approval', 'fx-session'].forEach(i => $(i).addEventListener('change', render));
-$('lg-rules').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b) { rule = +b.dataset.r; render(); } });
+['fx-scoped', 'fx-approval', 'fx-session'].forEach(i => $(i).addEventListener('change', e => { if (e.isTrusted) stop(); render(); }));
+$('lg-rules').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b) { stop(); rule = +b.dataset.r; render(); } });
+
+// ---- the walkthrough: each scene sets the fixes and a rule, then explains ----
+const SCENES = [
+  ['000', 0, 'This is a support bot built with <i>LangGraph</i>: a router, a researcher that searches the web, an account agent that reads customer records, a writer, and an email tool.'],
+  ['000', 0, 'As usually written, every node shares one message list and email sends without asking. Sherlock finds a <b>free</b> attack: text on a web page reaches the writer, which emails customer data out.'],
+  ['000', 2, 'It also finds that a customer\'s own message can steer the account agent into looking up <b>someone else\'s record</b>. Also free.'],
+  ['100', 1, 'Fix 1: give each node only the state keys it needs (<i>input_schema</i>). Web text can no longer reach the account agent: that attack now needs a <i>hacked agent</i>.'],
+  ['110', 0, 'Fix 2: ask before sending email (<i>interrupt_before</i>). Customer data can now leave only if <i>you click Allow</i>, so the reviewer is the last line of defense.'],
+  ['110', 2, 'But the router still copies the customer\'s message into <i>customer_id</i>. A plain-code node in the middle is the bridge, and that attack is <b>still free</b>.'],
+  ['111', 2, 'Fix 3: take the customer ID from the login session, not the message. Now this rule holds too: breaking it would need a <i>hacked agent</i>.'],
+  ['111', 0, 'Every rule now passes. Each pass comes with a <i>certificate</i> you can check yourself. Your turn: toggle the fixes above.'],
+];
+const SCENE_MS = 6500;
+let timer = null, scene = 0, played = false;
+function setFixes(k) {
+  ['fx-scoped', 'fx-approval', 'fx-session'].forEach((id, i) => {
+    const on = k[i] === '1', box = $(id);
+    if (box.checked !== on) { box.checked = on; const l = box.closest('label'); l.classList.add('flash'); setTimeout(() => l.classList.remove('flash'), 1200); }
+  });
+}
+function show(i) {
+  const [k, r, text] = SCENES[i];
+  setFixes(k); rule = r; render();
+  $('lg-sub').innerHTML = text;
+  $('lg-bar').style.width = `${((i + 1) / SCENES.length) * 100}%`;
+}
+function stop() {
+  if (!timer) return;
+  clearInterval(timer); timer = null;
+  $('lg-play').textContent = scene >= SCENES.length - 1 ? '↻ Replay walkthrough' : '▶ Resume walkthrough';
+}
+function play() {
+  if (timer) { stop(); return; }
+  if (scene >= SCENES.length - 1) scene = 0;
+  $('lg-play').textContent = '❚❚ Pause';
+  show(scene);
+  timer = setInterval(() => {
+    if (scene >= SCENES.length - 1) { stop(); return; }
+    show(++scene);
+  }, SCENE_MS);
+}
+$('lg-play').addEventListener('click', play);
 render();
+// play once when the demo first scrolls into view, unless the visitor prefers less motion
+if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting) && !played) { played = true; play(); io.disconnect(); } }, { threshold: 0.5 });
+  io.observe($('lg-svg'));
+}
 })();
 </script>
 </body>
