@@ -18,7 +18,7 @@ curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | py
 
 **2. Paste the results into [the Sherlock page](https://sherlocksec.org).** It checks them in your browser and uploads nothing.
 
-[`scan.py`](scan.py) is a 393-line Python script with no dependencies. Read it before you run it. It reads the permission settings of Claude Code, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
+[`scan.py`](scan.py) is a 626-line Python script with no dependencies. Read it before you run it. It reads the permission settings of Claude Code (per project, including every approval you saved with "don't ask again"), its MCP servers, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
 
 ![Results for a real developer Mac](docs/results.jpg)
 
