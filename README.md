@@ -2,7 +2,7 @@
 
 **Each AI agent passed review. Together, they leaked the key.**
 
-Engineers now run Claude Code, Codex, Cursor and more on one laptop, all sharing the same files. Each agent's permissions look safe on their own. Sherlock finds what the agents can do *as a group*: the cheapest attack, step by step, or a proof that none exists.
+Engineers now run Claude Code, Codex, Cursor and more on one laptop, all sharing the same files. Each agent's permissions look safe on their own. Sherlock finds what the agents can do *as a group*: the cheapest attack, step by step, or a certificate that none exists.
 
 ### [→ Try it: scan your Mac in 60 seconds](https://sherlocksec.org)
 
@@ -21,6 +21,20 @@ curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | py
 [`scan.py`](scan.py) is a 393-line Python script with no dependencies. Read it before you run it. It reads the permission settings of Claude Code, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
 
 ![Results for a real developer Mac](docs/results.jpg)
+
+## Certified: every PASS comes with a certificate
+
+When Sherlock says a rule holds, it gives you a certificate you can check without trusting Sherlock. For each worst case, the certificate holds a set of facts with three properties:
+
+- it contains everything the attacker starts with,
+- it is closed under every way influence spreads between agents,
+- it contains no violation.
+
+If such a set exists, the attack is impossible. [`verify.py`](verify.py), 152 lines of plain Python, checks this. It does no search, and it rejects forged or tampered certificates.
+
+```bash
+pbpaste | python3 <(curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/verify.py)
+```
 
 ## The attack in the picture
 

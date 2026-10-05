@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="Sherlock checks what the AI agents on your laptop can do together, and proves when they can't.">
+<meta name="description" content="Sherlock checks what the AI agents on your laptop can do together, and certifies when they can't.">
 <title>Sherlock</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20aria-hidden%3D%22true%22%3E%3Cline%20x1%3D%2220.6%22%20y1%3D%2220.6%22%20x2%3D%2228.5%22%20y2%3D%2228.5%22%20stroke%3D%22%23D8B068%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2213%22%20cy%3D%2213%22%20r%3D%2210.2%22%20fill%3D%22none%22%20stroke%3D%22%23D8B068%22%20stroke-width%3D%222.4%22/%3E%3Cline%20x1%3D%228%22%20y1%3D%2210.5%22%20x2%3D%2217.5%22%20y2%3D%228.5%22%20stroke%3D%22%23F2E7D3%22%20stroke-width%3D%221.4%22%20opacity%3D%220.7%22/%3E%3Cline%20x1%3D%228%22%20y1%3D%2210.5%22%20x2%3D%2212.5%22%20y2%3D%2218%22%20stroke%3D%22%23F2E7D3%22%20stroke-width%3D%221.4%22%20opacity%3D%220.7%22/%3E%3Cline%20x1%3D%2217.5%22%20y1%3D%228.5%22%20x2%3D%2212.5%22%20y2%3D%2218%22%20stroke%3D%22%23E2573B%22%20stroke-width%3D%222%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%2210.5%22%20r%3D%222%22%20fill%3D%22%23F2E7D3%22/%3E%3Ccircle%20cx%3D%2217.5%22%20cy%3D%228.5%22%20r%3D%222.2%22%20fill%3D%22%23E2573B%22/%3E%3Ccircle%20cx%3D%2212.5%22%20cy%3D%2218%22%20r%3D%222.2%22%20fill%3D%22%23E2573B%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -214,6 +214,37 @@ footer p { max-width: 52rem; }
   .watch-copy { position: static; transform: none; padding: 1.2rem 1rem 0; }
   .watch-fig figcaption { position: static; display: block; margin: 0.8rem 1rem 0; background: none; padding: 0; }
 }
+
+/* certificates */
+.certd { font-family: var(--mono); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-left: 0.9rem; vertical-align: middle; white-space: nowrap; }
+.cert-row { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; margin-top: 0.2rem; }
+.cert-btn { border-color: rgba(216,176,104,0.55); color: var(--accent); background: var(--accent-dim); }
+.cert-btn svg { width: 1rem; height: 1rem; }
+.cert-btn:hover { border-color: var(--accent); }
+.cert-note { font-family: var(--mono); font-size: 0.74rem; color: var(--dim); }
+.cert-how { border: 1px solid rgba(216,176,104,0.35); border-radius: 0.6rem; padding: 0.8rem 0.9rem; background: var(--bg2); display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.88rem; color: var(--muted); cursor: auto; }
+.cert-how pre { margin: 0; white-space: pre-wrap; word-break: break-all; color: var(--ink); max-height: none; }
+.cert-text { font-size: 0.7rem; }
+.certified { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 3rem; align-items: center; }
+.certified .sec-head { margin-bottom: 0; }
+.cert-points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+.cert-points li { display: grid; grid-template-columns: 5.6rem minmax(0, 1fr); gap: 1rem; align-items: baseline; color: var(--muted); font-size: 0.97rem; }
+.cert-points b { font-family: var(--mono); font-weight: 600; font-size: 0.74rem; letter-spacing: 0.1em; padding: 0.18rem 0.5rem; border-radius: 0.3rem; text-align: center; }
+.cert-points b.f { color: var(--attack); background: var(--attack-dim); border: 1px solid rgba(226,87,59,0.55); }
+.cert-points b.p { color: var(--accent); background: var(--accent-dim); border: 1px solid rgba(216,176,104,0.5); }
+.cert-points b.c { color: var(--ink); background: var(--panel2); border: 1px solid var(--line2); }
+.certificate { position: relative; background: radial-gradient(30rem 18rem at 100% 0%, rgba(216,176,104,0.10), transparent 70%), var(--panel); border: 1px solid rgba(216,176,104,0.55); outline: 1px solid rgba(216,176,104,0.25); outline-offset: 6px; border-radius: 0.5rem; padding: 2rem 1.8rem 1.6rem; display: flex; flex-direction: column; gap: 1.1rem; min-width: 0; }
+.certificate .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.certificate .title { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.02em; color: var(--accent); }
+.certificate .sub { font-family: var(--mono); font-size: 0.72rem; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; }
+.seal { width: 4.6rem; height: 4.6rem; flex: none; }
+.certificate dl { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.55rem 1rem; margin: 0; font-size: 0.9rem; }
+.certificate dt { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); padding-top: 0.15rem; }
+.certificate dd { margin: 0; color: var(--ink); min-width: 0; }
+.certificate .term { font-family: var(--mono); font-size: 0.78rem; background: var(--bg); border: 1px solid var(--line); border-radius: 0.45rem; padding: 0.7rem 0.8rem; color: var(--muted); line-height: 1.7; overflow-x: auto; }
+.certificate .term .ok { color: var(--accent); font-weight: 600; }
+@media (max-width: 960px) { .certified { grid-template-columns: minmax(0, 1fr); gap: 2rem; } }
+@media (max-width: 520px) { .certificate dl { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; } .certificate dd { margin-bottom: 0.5rem; } .cert-points li { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; } .cert-points b { justify-self: start; } }
 </style>
 
 <style>body{margin:0}</style>
@@ -223,6 +254,7 @@ footer p { max-width: 52rem; }
   <a class="brand" href="#top"><svg class="mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line x1="20.6" y1="20.6" x2="28.5" y2="28.5" style="stroke:var(--accent)" stroke-width="3.6" stroke-linecap="round"/><circle cx="13" cy="13" r="10.2" fill="none" style="stroke:var(--accent)" stroke-width="2.4"/><line x1="8" y1="10.5" x2="17.5" y2="8.5" style="stroke:var(--ink)" stroke-width="1.4" opacity="0.7"/><line x1="8" y1="10.5" x2="12.5" y2="18" style="stroke:var(--ink)" stroke-width="1.4" opacity="0.7"/><line x1="17.5" y1="8.5" x2="12.5" y2="18" style="stroke:var(--attack)" stroke-width="2"/><circle cx="8" cy="10.5" r="2" style="fill:var(--ink)"/><circle cx="17.5" cy="8.5" r="2.2" style="fill:var(--attack)"/><circle cx="12.5" cy="18" r="2.2" style="fill:var(--attack)"/></svg>Sherlock</a>
   <ul>
     <li><a href="#scan">Scan your Mac</a></li>
+    <li><a href="#certified">Certified</a></li>
     <li><a href="#why">Why now</a></li>
     <li><a href="#how">How it works</a></li>
     <li><a href="#pilot">Pilot</a></li>
@@ -235,12 +267,12 @@ footer p { max-width: 52rem; }
     <div class="hero-text">
       <p class="kicker">Security for teams of AI agents</p>
       <h1>Each agent passed review. <span class="hot">Together, they leaked the key.</span></h1>
-      <p class="lede">Your engineers run Claude Code, Codex, Cursor and more on one laptop, all sharing the same files. Sherlock finds what those agents can do as a group: the cheapest attack, step by step, or a proof that none exists.</p>
+      <p class="lede">Your engineers run Claude Code, Codex, Cursor and more on one laptop, all sharing the same files. Sherlock finds what those agents can do as a group: the cheapest attack, step by step, or a <b style="color:var(--accent);font-weight:600">certificate</b> that none exists.</p>
       <div class="cta">
         <a class="btn primary" href="#scan">Scan your Mac in 60 seconds →</a>
         <a class="btn" href="#pilot">Run it across your team</a>
       </div>
-      <div class="trust"><span>Runs locally</span><span>Reads settings, never secrets</span><span>Proofs you can verify</span></div>
+      <div class="trust"><span>Runs locally</span><span>Reads settings, never secrets</span><span>Every PASS is certified</span></div>
     </div>
 
     <figure class="graph" style="margin:0" aria-label="An attack found by Sherlock: a web page steers Cursor, which rewrites AGENTS.md; Codex and Claude Code obey it; Codex copies the SSH key into the project and Claude Code sends it to the internet.">
@@ -328,6 +360,44 @@ footer p { max-width: 52rem; }
     </div>
   </section>
 
+  <section class="wide certified" id="certified" aria-labelledby="cert-h">
+    <div style="display:flex;flex-direction:column;gap:1.6rem;min-width:0">
+      <div class="sec-head">
+        <p class="kicker">Certified</p>
+        <h2 id="cert-h">When Sherlock says safe, it hands you the certificate</h2>
+        <p>Scanners and red-team tools can only say they found nothing. Sherlock proves it. Every rule it passes comes with a certificate: evidence that no attack exists within your budget, which you can check yourself without trusting Sherlock.</p>
+      </div>
+      <ul class="cert-points">
+        <li><b class="f">FAIL</b><span>You get the attack, step by step, with the exact number of hacked agents and approvals it needs.</span></li>
+        <li><b class="p">PASS</b><span>You get a certificate. For each worst case, it gives a set of facts that holds everything the attacker starts with, is closed under every way influence spreads, and contains no violation. If such a set exists, the attack cannot happen.</span></li>
+        <li><b class="c">CHECK</b><span><a href="https://github.com/Ning0Luo/sherlock/blob/main/verify.py">verify.py</a> is 152 lines of plain Python. It does no searching; it only checks the evidence. Change one fact and it says <span class="mono" style="color:var(--attack)">INVALID</span>. In our tests it rejected every forged and every tampered certificate.</span></li>
+      </ul>
+      <p class="muted" style="font-size:0.88rem">A certificate covers the permissions Sherlock read and the attacker it models: someone who writes web pages, hacks up to the agents in your budget and gets up to that many prompts approved. The command-line tool also writes SAT-solver proofs, checked by an independent proof checker.</p>
+    </div>
+    <figure class="certificate" style="margin:0" aria-label="An example Sherlock certificate">
+      <div class="head">
+        <div style="display:flex;flex-direction:column;gap:0.35rem"><span class="sub">Sherlock · sherlock-cert/1</span><span class="title">Certificate of safety</span></div>
+        <svg class="seal" viewBox="0 0 80 80" aria-hidden="true">
+          <circle cx="40" cy="40" r="37" fill="none" style="stroke:var(--accent)" stroke-width="1.5" stroke-dasharray="2 3"/>
+          <circle cx="40" cy="40" r="31" fill="none" style="stroke:var(--accent)" stroke-width="1.2"/>
+          <g transform="translate(22 22) scale(1.1)">
+            <line x1="20.6" y1="20.6" x2="28.5" y2="28.5" style="stroke:var(--accent)" stroke-width="3.6" stroke-linecap="round"/>
+            <circle cx="13" cy="13" r="10.2" fill="none" style="stroke:var(--accent)" stroke-width="2.4"/>
+            <line x1="8" y1="10.5" x2="17.5" y2="8.5" style="stroke:var(--accent)" stroke-width="1.4"/><line x1="8" y1="10.5" x2="12.5" y2="18" style="stroke:var(--accent)" stroke-width="1.4"/><line x1="17.5" y1="8.5" x2="12.5" y2="18" style="stroke:var(--accent)" stroke-width="1.4"/>
+            <circle cx="8" cy="10.5" r="2" style="fill:var(--accent)"/><circle cx="17.5" cy="8.5" r="2" style="fill:var(--accent)"/><circle cx="12.5" cy="18" r="2" style="fill:var(--accent)"/>
+          </g>
+        </svg>
+      </div>
+      <dl>
+        <dt>Rule</dt><dd>Web content never rewrites Claude Code's settings</dd>
+        <dt>Holds against</dt><dd>every choice of 0 hacked agents and 0 approvals</dd>
+        <dt>Setup</dt><dd>4 agents, 15 places, as scanned</dd>
+        <dt>Evidence</dt><dd>one closed, violation-free set of facts per worst case</dd>
+      </dl>
+      <div class="term">$ pbpaste | python3 verify.py<br><span class="ok">VALID</span>: "Claude Code settings not attacker-controlled" holds for every way to hack 0 agent(s) and approve 0 prompt(s).<br>Checked 1 worst case(s) on 4 agents and 15 resources.</div>
+    </figure>
+  </section>
+
   <section class="wide" id="why" aria-labelledby="why-h">
     <div class="sec-head">
       <p class="kicker">Why now</p>
@@ -349,7 +419,7 @@ footer p { max-width: 52rem; }
     <ol class="how">
       <li><h3>Write the rules you care about</h3><div class="code"><span class="k">never</span> ssh -&gt; internet<br><span class="k">tolerate</span> 1 agent, 0 approvals</div><p>Each rule says how many hacked agents and Allow clicks it must survive.</p></li>
       <li><h3>Read every agent's rights</h3><p>The scanner reads the permission settings of every agent on the machine. Structure only, never secret values, and nothing leaves the machine.</p></li>
-      <li><h3>Solve it as one puzzle</h3><p>Rules and rights compile to SAT. A solution is a concrete attack, replayed by a simulator. No solution comes with a proof that a separate checker verifies.</p></li>
+      <li><h3>Solve it as one puzzle</h3><p>Rules and rights compile to SAT. A solution is a concrete attack, replayed by a simulator. No solution comes with a certificate that a separate checker verifies.</p></li>
       <li><h3>Fix the cheapest gap</h3><p>Each failure names the fewest hacked agents and approvals an attacker needs. Change one setting, re-run in two seconds, and watch the cost rise.</p></li>
     </ol>
   </section>
@@ -382,7 +452,7 @@ footer p { max-width: 52rem; }
   </section>
 
   <footer class="wide">
-    <p>Sherlock is a research prototype from the University of Illinois Urbana-Champaign. This page checks every combination of hacked agents and approvals in your browser; the command-line tool uses a SAT solver and writes independently checkable proofs. A failure means an attack is possible under these permissions, not that an agent will fall for it.</p>
+    <p>Sherlock is a research prototype from the University of Illinois Urbana-Champaign. Every rule this page passes comes with a certificate that verify.py checks independently; the command-line tool also writes SAT-solver proofs. A failure means an attack is possible under these permissions, not that an agent will fall for it.</p>
     <span class="mono">© 2026 Sherlock</span>
   </footer>
 </main>
@@ -867,7 +937,30 @@ const Engine = (() => {
     front.forEach(f => f.sort((a, b) => a.t - b.t || a.h - b.h));
     return { front, complete: cap === bits };
   }
-  return { load, analyze, search, violated };
+
+  /* Certificate for a rule that holds: one inductive invariant (the least
+     fixpoint) per worst case, i.e. per choice of exactly min(t, agents)
+     hacked agents and min(h, prompts) approvals. verify.py re-checks it. */
+  function certificate(d, m, k, t, h) {
+    const n = m.agents.length, g = m.gates.length, tt = Math.min(t, n), hh = Math.min(h, g);
+    const combos = (N, K) => { const out = []; const rec = (s, acc) => { if (acc.length === K) { out.push(acc.slice()); return; } for (let i = s; i < N; i++) { acc.push(i); rec(i + 1, acc); acc.pop(); } }; rec(0, []); return out; };
+    const p = m.policies[k];
+    const { targets, ...rule } = p;
+    const invariants = [];
+    for (const cs of combos(n, tt)) for (const gs of combos(g, hh)) {
+      const C = cs.reduce((x, i) => x | (1 << i), 0), G = gs.reduce((x, j) => x | (1 << j), 0);
+      const res = analyze(m, C, G, true);
+      if (violated(m, p, res)) return null;
+      const labels = {};
+      m.resNames.forEach(r => { if (res.lab[r].size) labels[r] = [...res.lab[r].keys()].sort(); });
+      invariants.push({ hacked: cs.map(i => m.agents[i].id), approved: gs.map(j => [m.agents[m.gates[j].agent].id, m.gates[j].name]),
+        corrupted: [...res.cor.keys()].map(i => m.agents[i].id).sort(), tainted: [...res.taint.keys()].sort(), labels });
+    }
+    const setup = { agents: {}, resources: d.resources };
+    Object.entries(d.agents).forEach(([id, a]) => { setup.agents[id] = { read: a.read || [], write: a.write || [], injectable: a.injectable !== false, ask: a.ask || {}, flows: a.flows || [] }; });
+    return { format: 'sherlock-cert/1', issued: new Date().toISOString(), rule, budget: { agents: t, approvals: h }, setup, invariants };
+  }
+  return { load, analyze, search, violated, certificate };
 })();
 
 (() => {
@@ -881,7 +974,7 @@ $('scanner-view').textContent = SCANNER;
 const LABELS = { ssh_key: 'SSH key', aws_creds: 'AWS credentials', gh_token: 'GitHub token', docker_creds: 'Docker credentials', kube_creds: 'Kubernetes credentials', registry_tokens: 'package registry tokens', gpg_key: 'GPG key', browser_sessions: 'browser logins and cookies' };
 const SECRET_RES = { 'secret:ssh': '~/.ssh', 'secret:aws': '~/.aws', 'secret:gh': 'the GitHub CLI token', 'secret:docker': '~/.docker', 'secret:kube': '~/.kube', 'secret:pkg': '~/.npmrc and ~/.pypirc', 'secret:gpg': '~/.gnupg', 'secret:browser': 'browser profiles' };
 const GATES = { edit: 'edit files', shell: 'run a shell command', web: 'fetch a web page', read_outside: 'read a file outside the project', mcp: 'use a local MCP tool', escalate: 'run a command outside its sandbox', computer_use: 'control an app', terminal: 'run a terminal command', commands: 'run a command' };
-let model = null, results = null, budget = { t: 0, h: 0 }, open = new Set();
+let model = null, raw = null, results = null, budget = { t: 0, h: 0 }, open = new Set(), certs = {};
 
 const title = i => model.agents[i].title;
 const byId = id => model.idx[id] !== undefined ? title(model.idx[id]) : id;
@@ -940,7 +1033,7 @@ function steps(p, pt) {
 
 const cost = (t, h) => `${t} agent${t === 1 ? '' : 's'} hacked · ${h} approval${h === 1 ? '' : 's'}`;
 function check(d, isSample) {
-  model = Engine.load(d);
+  model = Engine.load(d); raw = d; certs = {};
   if (!model.agents.length) throw new Error('The scan found no AI agents on this machine.');
   const r = Engine.search(model, true);
   results = { ...r, isSample };
@@ -956,7 +1049,7 @@ function render() {
   const opt = (f, v) => [0, 1, 2, 3].map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('');
   let h = `<div class="scan-head"><div style="display:flex;flex-direction:column;gap:0.4rem">
       <span class="tag" style="align-self:flex-start">${isSample ? 'Example: a developer Mac. Paste your own to replace it' : 'Your Mac · scanned ' + esc(model.generated || '')}</span>
-      <h3>${held} of ${verdicts.length} rules hold</h3>
+      <h3>${held} of ${verdicts.length} rules hold${held ? `<span class="certd">${held === 1 ? 'certified' : 'each one certified'}</span>` : ''}</h3>
       <p class="muted">${model.agents.length} agents found: ${model.agents.map(a => esc(a.title)).join(', ')}. Secrets present: ${[...secrets].map(ln).join(', ') || 'none found'}.</p></div>
     <div class="budget" style="font-size:0.95rem">Must survive <select id="b-t" aria-label="Hacked agents to tolerate">${opt('t', budget.t)}</select> hacked agents and <select id="b-h" aria-label="Approvals to tolerate">${opt('h', budget.h)}</select> approvals</div></div>`;
   h += '<div class="rules">' + verdicts.map(v => {
@@ -964,8 +1057,9 @@ function render() {
     const shown = open.has(v.k) && (v.hit || v.pts[0]);
     const pt = v.hit || v.pts[0];
     return `<div class="rule" role="button" tabindex="0" data-open="${v.k}" aria-expanded="${!!shown}">
-      <div class="rule-top"><h3>${esc(policyName(v.p))}</h3><span class="pill ${v.hit ? 'fail' : 'pass'}">${v.hit ? 'FAIL' : 'PASS'}</span></div>
+      <div class="rule-top"><h3>${esc(policyName(v.p))}</h3><span class="pill ${v.hit ? 'fail' : 'pass'}">${v.hit ? 'FAIL' : 'PASS · CERTIFIED'}</span></div>
       <div class="cost">${cheap}</div>
+      ${v.hit ? '' : certRow(v.k)}
       ${shown ? `${v.hit ? '' : '<p class="muted" style="font-size:0.9rem">Holds within your budget. The cheapest attack outside it:</p>'}<ol class="steps">${steps(v.p, pt).map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : (pt ? '<p class="muted" style="font-size:0.85rem">Show the attack</p>' : '')}
     </div>`;
   }).join('') + '</div>';
@@ -973,10 +1067,34 @@ function render() {
   h += `<details><summary style="cursor:pointer;font-weight:600">What each agent can do, as scanned</summary><div class="table-wrap" style="margin-top:0.8rem"><table class="agents-tbl"><thead><tr><th>Agent</th><th>Reads without asking</th><th>Writes without asking</th><th>Asks before</th></tr></thead><tbody>` +
     model.agents.map((a, i) => `<tr><th scope="row">${esc(a.title)}${a.ai ? '' : '<br><span class="muted">not an AI model</span>'}${a.notes.length ? '<ul>' + a.notes.map(n => `<li>${esc(n)}</li>`).join('') + '</ul>' : ''}</th><td>${list(a.r)}</td><td>${list(a.w)}</td><td class="ask">${model.gates.filter(g => g.agent === i).map(g => esc(GATES[g.name] || g.name)).join(', ') || '—'}</td></tr>`).join('') +
     '</tbody></table></div></details>';
-  h += `<p class="muted" style="font-size:0.9rem">This page tries every combination of hacked agents and approvals. The command-line tool gives the same answers with a SAT solver, writes a proof for every rule that holds, and suggests the smallest settings change that fixes each failure.</p>`;
+  h += `<p class="muted" style="font-size:0.9rem">Every FAIL comes with the attack. Every PASS comes with a certificate that you can check yourself with <a href="https://github.com/Ning0Luo/sherlock/blob/main/verify.py">verify.py</a>, a short separate checker that trusts nothing this page says. The command-line tool also writes SAT-solver proofs and suggests the smallest settings change that fixes each failure.</p>`;
   $('scan-out').innerHTML = h;
 }
 
+function certRow(k) {
+  const st = certs[k];
+  let h = `<div class="cert-row"><button type="button" class="btn sm cert-btn" data-cert="${k}"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 12.5 5 18l5-2 5 2-1.5-5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Get certificate</button>`;
+  if (!st) return h + '<span class="cert-note">Check it yourself in 10 seconds</span></div>';
+  h += `<span class="cert-note">${st.copied ? 'Copied to your clipboard' : 'Select the certificate below and copy it'}${st.saved ? ' and downloaded' : ''} · ${st.cases} worst case${st.cases === 1 ? '' : 's'}</span></div>`;
+  h += `<div class="cert-how"><p>Check it without trusting Sherlock. In Terminal:</p><pre>pbpaste | python3 &lt;(curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/verify.py)</pre><p>Expected: <span class="mono" style="color:var(--accent)">VALID</span>. Change one fact in the certificate and it prints <span class="mono" style="color:var(--attack)">INVALID</span>.</p>${st.copied ? '' : `<textarea readonly rows="4" class="cert-text">${esc(st.text)}</textarea>`}</div>`;
+  return h;
+}
+function getCert(k) {
+  const c = Engine.certificate(raw, model, k, budget.t, budget.h);
+  if (!c) return;
+  const text = JSON.stringify(c, null, 1);
+  const st = { text, cases: c.invariants.length, copied: false, saved: false };
+  certs[k] = st; open.add(k);
+  try {
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = 'sherlock-certificate.json'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    st.saved = location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.hostname);
+  } catch (e) {}
+  const done = () => render();
+  try { navigator.clipboard.writeText(text).then(() => { st.copied = true; done(); }, done); } catch (e) { done(); }
+  render();
+}
 function readInput(text) {
   $('scan-err').textContent = '';
   let d;
@@ -993,8 +1111,8 @@ $('copy-cmd').addEventListener('click', async () => {
 $('scan-run').addEventListener('click', () => readInput($('scan-in').value));
 $('scan-in').addEventListener('paste', () => setTimeout(() => readInput($('scan-in').value), 0));
 $('scan-file').addEventListener('change', e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { $('scan-in').value = r.result; readInput(r.result); }; r.readAsText(f); });
-$('scan-out').addEventListener('change', e => { if (e.target.id === 'b-t') budget.t = +e.target.value; if (e.target.id === 'b-h') budget.h = +e.target.value; open = new Set(); render(); });
-$('scan-out').addEventListener('click', e => { if (e.target.closest('select, details')) return; const r = e.target.closest('[data-open]'); if (!r) return; const k = +r.dataset.open; open.has(k) ? open.delete(k) : open.add(k); render(); });
+$('scan-out').addEventListener('change', e => { if (e.target.id === 'b-t') budget.t = +e.target.value; if (e.target.id === 'b-h') budget.h = +e.target.value; open = new Set(); certs = {}; render(); });
+$('scan-out').addEventListener('click', e => { const cb = e.target.closest('[data-cert]'); if (cb) { e.stopPropagation(); getCert(+cb.dataset.cert); return; } if (e.target.closest('select, details, .cert-how')) return; const r = e.target.closest('[data-open]'); if (!r) return; const k = +r.dataset.open; open.has(k) ? open.delete(k) : open.add(k); render(); });
 $('scan-out').addEventListener('keydown', e => { const r = e.target.closest('[data-open]'); if (r && e.target === r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); r.click(); } });
 check(SAMPLE, true);
 })();
