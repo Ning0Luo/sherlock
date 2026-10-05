@@ -245,6 +245,25 @@ footer p { max-width: 52rem; }
 .certificate .term .ok { color: var(--accent); font-weight: 600; }
 @media (max-width: 960px) { .certified { grid-template-columns: minmax(0, 1fr); gap: 2rem; } }
 @media (max-width: 520px) { .certificate dl { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; } .certificate dd { margin-bottom: 0.5rem; } .cert-points li { grid-template-columns: minmax(0, 1fr); gap: 0.3rem; } .cert-points b { justify-self: start; } }
+
+/* openshell */
+.os-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+.os-card { background: var(--panel); border: 1px solid var(--line); border-radius: 0.9rem; padding: 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; }
+.os-card .lbl { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+.os-card h3 { font-size: 1.12rem; }
+.os-card p { color: var(--muted); font-size: 0.94rem; }
+.os-card.us { border-color: rgba(216,176,104,0.55); }
+.os-chain { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0; font-size: 0.86rem; }
+.os-chain li { display: flex; align-items: center; }
+.os-chain li + li::before { content: "→"; color: var(--dim); padding-inline: 0.5rem; }
+.os-chain span { font-family: var(--mono); padding: 0.3rem 0.55rem; border-radius: 0.35rem; background: var(--bg2); border: 1px solid var(--line2); white-space: nowrap; }
+.os-chain .bad { color: var(--attack); border-color: rgba(226,87,59,0.55); background: var(--attack-dim); }
+.os-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 34rem; }
+.os-table th, .os-table td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.os-table th { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); font-weight: 500; background: var(--panel); }
+.os-table tr:last-child td { border-bottom: 0; }
+.os-table td:nth-child(2) { white-space: nowrap; }
+@media (max-width: 860px) { .os-grid { grid-template-columns: minmax(0, 1fr); } }
 </style>
 
 <style>body{margin:0}</style>
@@ -255,6 +274,7 @@ footer p { max-width: 52rem; }
   <ul>
     <li><a href="#scan">Scan your Mac</a></li>
     <li><a href="#certified">Certified</a></li>
+    <li><a href="#openshell">OpenShell</a></li>
     <li><a href="#why">Why now</a></li>
     <li><a href="#how">How it works</a></li>
     <li><a href="#pilot">Pilot</a></li>
@@ -396,6 +416,42 @@ footer p { max-width: 52rem; }
       </dl>
       <div class="term">$ pbpaste | python3 verify.py<br><span class="ok">VALID</span>: "Claude Code settings not attacker-controlled" holds for every way to hack 0 agent(s) and approve 0 prompt(s).<br>Checked 1 worst case(s) on 4 agents and 15 resources.</div>
     </figure>
+  </section>
+
+  <section class="wide" id="openshell" aria-labelledby="os-h">
+    <div class="sec-head">
+      <p class="kicker">Works with NVIDIA OpenShell</p>
+      <h2 id="os-h">Every sandbox within its boundary. The fleet still leaks.</h2>
+      <p><a href="https://github.com/NVIDIA/OpenShell">OpenShell</a> runs each agent in a sandbox with a policy: the paths it can touch and the hosts, HTTP methods and MCP tools it can reach. Sherlock reads those policies directly and checks the sandboxes as a team.</p>
+    </div>
+    <div class="os-grid">
+      <div class="os-card">
+        <span class="lbl">OpenShell's prover</span>
+        <h3>Checks one sandbox at a time</h3>
+        <p>Does this policy grant more than the boundary allows? It answers that for each sandbox on its own, with an SMT solver.</p>
+      </div>
+      <div class="os-card us">
+        <span class="lbl">Sherlock</span>
+        <h3>Checks the sandboxes together</h3>
+        <p>Can web content, a hacked agent or one approved proposal travel through shared volumes and shared hosts to a secret, a credentialed account or production? Pending policy-advisor proposals count as approvals.</p>
+      </div>
+    </div>
+    <div class="os-card" style="margin-top:1rem">
+      <span class="lbl">Example: three OpenShell sandboxes, each with a tight policy</span>
+      <ol class="os-chain" aria-label="Attack path">
+        <li><span class="bad">wikipedia.org</span></li><li><span>researcher · read-only web</span></li><li><span>/workspace volume</span></li><li><span>deploy job · not an AI</span></li><li><span class="bad">internal deploy API</span></li>
+      </ol>
+      <div class="table-wrap" style="margin-top:0.4rem"><table class="os-table">
+        <thead><tr><th>Rule</th><th>Result</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Web content never ships to production</td><td><span class="pill fail">FAIL</span></td><td>The researcher can only GET papers, but it writes the workspace the deploy job ships.</td></tr>
+          <tr><td>Web content never acts through your GitHub account</td><td><span class="pill fail">FAIL</span></td><td>The coder reads GitHub, which anyone can write to, and holds a credentialed read-write endpoint.</td></tr>
+          <tr><td>The coder's SSH key never leaves</td><td><span class="pill fail">FAIL</span></td><td>The coder copies it into the shared workspace; the researcher's GET requests carry it out.</td></tr>
+          <tr><td>The deploy job is never steered</td><td><span class="pill pass">PASS · CERTIFIED</span></td><td>A fixed job ignores what it reads. Proof of 897 steps, verified independently.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted" style="font-size:0.86rem">Checking an OpenShell fleet takes the policy files you already have, plus a short list of which volumes the sandboxes share and where secrets live. <a href="#pilot">Ask us to run it on yours.</a></p>
+    </div>
   </section>
 
   <section class="wide" id="why" aria-labelledby="why-h">
