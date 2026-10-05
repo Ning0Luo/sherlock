@@ -4,7 +4,7 @@
 
 Engineers now run Claude Code, Codex, Cursor and more on one laptop, all sharing the same files. Each agent's permissions look safe on their own. Sherlock finds what the agents can do *as a group*: the cheapest attack, step by step, or a proof that none exists.
 
-### [→ Try it: scan your Mac in 60 seconds](https://claude.ai/artifact/4hAve6x4wLPUj68ZnP58gE)
+### [→ Try it: scan your Mac in 60 seconds](https://sherlocksec.org)
 
 ![Sherlock: an attack path through three agents](docs/hero.jpg)
 
@@ -16,7 +16,7 @@ Engineers now run Claude Code, Codex, Cursor and more on one laptop, all sharing
 curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 - | pbcopy && echo 'Copied. Paste it into the Sherlock page.'
 ```
 
-**2. Paste the results into [the Sherlock page](https://claude.ai/artifact/4hAve6x4wLPUj68ZnP58gE).** It checks them in your browser and uploads nothing.
+**2. Paste the results into [the Sherlock page](https://sherlocksec.org).** It checks them in your browser and uploads nothing.
 
 [`scan.py`](scan.py) is a 393-line Python script with no dependencies. Read it before you run it. It reads the permission settings of Claude Code, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
 
