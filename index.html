@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Sherlock checks what the AI agents on your laptop can do together, and proves when they can't.">
 <title>Sherlock</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20aria-hidden%3D%22true%22%3E%3Cline%20x1%3D%2220.6%22%20y1%3D%2220.6%22%20x2%3D%2228.5%22%20y2%3D%2228.5%22%20stroke%3D%22%23D8B068%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2213%22%20cy%3D%2213%22%20r%3D%2210.2%22%20fill%3D%22none%22%20stroke%3D%22%23D8B068%22%20stroke-width%3D%222.4%22/%3E%3Cline%20x1%3D%228%22%20y1%3D%2210.5%22%20x2%3D%2217.5%22%20y2%3D%228.5%22%20stroke%3D%22%23F2E7D3%22%20stroke-width%3D%221.4%22%20opacity%3D%220.7%22/%3E%3Cline%20x1%3D%228%22%20y1%3D%2210.5%22%20x2%3D%2212.5%22%20y2%3D%2218%22%20stroke%3D%22%23F2E7D3%22%20stroke-width%3D%221.4%22%20opacity%3D%220.7%22/%3E%3Cline%20x1%3D%2217.5%22%20y1%3D%228.5%22%20x2%3D%2212.5%22%20y2%3D%2218%22%20stroke%3D%22%23E2573B%22%20stroke-width%3D%222%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%2210.5%22%20r%3D%222%22%20fill%3D%22%23F2E7D3%22/%3E%3Ccircle%20cx%3D%2217.5%22%20cy%3D%228.5%22%20r%3D%222.2%22%20fill%3D%22%23E2573B%22/%3E%3Ccircle%20cx%3D%2212.5%22%20cy%3D%2218%22%20r%3D%222.2%22%20fill%3D%22%23E2573B%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
@@ -47,8 +48,7 @@ nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; display
   background: rgba(12,9,6,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(47,37,25,0.7); }
 nav .inner { max-width: var(--wide); margin-inline: auto; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .brand { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.7rem; color: var(--ink); text-decoration: none; }
-.mark { width: 1.35rem; height: 1.35rem; position: relative; }
-.mark::before, .mark::after { content: ""; position: absolute; width: 0.8rem; height: 0.8rem; border-radius: 3px; }
+.mark { width: 1.75rem; height: 1.75rem; display: block; flex: none; }
 .mark::before { left: 0; top: 0; background: var(--accent); }
 .mark::after { right: 0; bottom: 0; background: var(--attack); mix-blend-mode: screen; }
 nav ul { list-style: none; display: flex; gap: 1.6rem; margin: 0; padding: 0; font-size: 0.92rem; }
@@ -220,7 +220,7 @@ footer p { max-width: 52rem; }
 </head>
 <body>
 <nav><div class="inner">
-  <a class="brand" href="#top"><span class="mark" aria-hidden="true"></span>Sherlock</a>
+  <a class="brand" href="#top"><svg class="mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line x1="20.6" y1="20.6" x2="28.5" y2="28.5" style="stroke:var(--accent)" stroke-width="3.6" stroke-linecap="round"/><circle cx="13" cy="13" r="10.2" fill="none" style="stroke:var(--accent)" stroke-width="2.4"/><line x1="8" y1="10.5" x2="17.5" y2="8.5" style="stroke:var(--ink)" stroke-width="1.4" opacity="0.7"/><line x1="8" y1="10.5" x2="12.5" y2="18" style="stroke:var(--ink)" stroke-width="1.4" opacity="0.7"/><line x1="17.5" y1="8.5" x2="12.5" y2="18" style="stroke:var(--attack)" stroke-width="2"/><circle cx="8" cy="10.5" r="2" style="fill:var(--ink)"/><circle cx="17.5" cy="8.5" r="2.2" style="fill:var(--attack)"/><circle cx="12.5" cy="18" r="2.2" style="fill:var(--attack)"/></svg>Sherlock</a>
   <ul>
     <li><a href="#scan">Scan your Mac</a></li>
     <li><a href="#why">Why now</a></li>
