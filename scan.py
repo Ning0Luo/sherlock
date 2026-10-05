@@ -625,7 +625,17 @@ def main() -> None:
         "policies": [{k: v for k, v in p.__dict__.items() if v is not None} for p in s.policies],
     }
     text = json.dumps(out, indent=1).replace(str(Path.home()), "~")
-    print(text)
+    if "--print" in sys.argv[1:]:
+        print(text)
+        return
+    import subprocess
+    try:
+        subprocess.run(["pbcopy"], input=text.encode(), check=True)
+    except Exception:
+        print(text)          # no clipboard (e.g. Linux): print it; save with > scan.json
+        return
+    n = len(out["agents"])
+    print(f"Copied: {n} agent{'s' if n != 1 else ''} found. Paste it into the page at https://sherlocksec.org")
 
 
 if __name__ == "__main__":

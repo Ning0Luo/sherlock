@@ -338,15 +338,15 @@ footer p { max-width: 52rem; }
         <ol class="scan-steps">
           <li>
             <h3>Copy the scanner</h3>
-            <p class="muted">One command. It runs <a href="https://github.com/Ning0Luo/sherlock/blob/main/scan.py">scan.py</a>, a 632-line Python script with no dependencies. It reads the permission settings of Claude Code (per project, including every approval you saved with “don't ask again”), its MCP servers, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like <span class="mono">~/.ssh</span> exist. It never opens a secret.</p>
-            <pre style="margin:0;max-height:none;white-space:pre-wrap;word-break:break-all;color:var(--ink)">curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 - | pbcopy &amp;&amp; echo 'Copied. Paste it into the Sherlock page.'</pre>
+            <p class="muted">One command. It runs <a href="https://github.com/Ning0Luo/sherlock/blob/main/scan.py">scan.py</a>, a 642-line Python script with no dependencies. It reads the permission settings of Claude Code (per project, including every approval you saved with “don't ask again”), its MCP servers, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like <span class="mono">~/.ssh</span> exist. It never opens a secret.</p>
+            <pre style="margin:0;max-height:none;white-space:pre-wrap;word-break:break-all;color:var(--ink)">curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 -</pre>
             <div class="cta"><button type="button" class="btn primary" id="copy-cmd">Copy command</button><span class="muted" id="copy-msg" aria-live="polite" style="font-size:0.88rem"></span></div>
             <details><summary>Read the script first</summary><pre id="scanner-view"></pre></details>
           </li>
           <li>
             <h3>Paste it into Terminal</h3>
-            <p class="muted">Open Terminal, paste and press Return. When it prints “Copied”, the results are on your clipboard.</p>
-            <p class="muted" style="font-size:0.84rem">On Linux, replace <span class="mono">pbcopy</span> with <span class="mono">xclip -selection clipboard</span>, or with <span class="mono">&gt; scan.json</span> and choose the file in step 3.</p>
+            <p class="muted">Open Terminal, paste and press Return. When it prints “Copied”, the results are on your clipboard. It only says that when the scan worked.</p>
+            <p class="muted" style="font-size:0.84rem">On Linux there is no clipboard tool, so it prints the results instead: add <span class="mono">&gt; scan.json</span> to the end and choose the file in step 3.</p>
           </li>
           <li>
             <h3>Paste the results here</h3>
@@ -1085,7 +1085,17 @@ def main() -> None:
         "policies": [{k: v for k, v in p.__dict__.items() if v is not None} for p in s.policies],
     }
     text = json.dumps(out, indent=1).replace(str(Path.home()), "~")
-    print(text)
+    if "--print" in sys.argv[1:]:
+        print(text)
+        return
+    import subprocess
+    try:
+        subprocess.run(["pbcopy"], input=text.encode(), check=True)
+    except Exception:
+        print(text)          # no clipboard (e.g. Linux): print it; save with > scan.json
+        return
+    n = len(out["agents"])
+    print(f"Copied: {n} agent{'s' if n != 1 else ''} found. Paste it into the page at https://sherlocksec.org")
 
 
 if __name__ == "__main__":
@@ -1205,7 +1215,7 @@ const Engine = (() => {
 (() => {
 const SCANNER = document.getElementById('scanner-src').textContent.replace(/^\n/, '');
 const SAMPLE = JSON.parse(document.getElementById('scan-sample').textContent);
-const CMD = "curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 - | pbcopy && echo 'Copied. Paste it into the Sherlock page.'";
+const CMD = "curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 -";
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 $('scanner-view').textContent = SCANNER;

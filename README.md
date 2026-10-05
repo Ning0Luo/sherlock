@@ -10,15 +10,15 @@ Engineers now run Claude Code, Codex, Cursor and more on one laptop, all sharing
 
 ## Scan your Mac
 
-**1. Run this in Terminal.** It copies the results to your clipboard.
+**1. Run this in Terminal.** It copies the results to your clipboard and says "Copied" only when the scan worked.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 - | pbcopy && echo 'Copied. Paste it into the Sherlock page.'
+curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 -
 ```
 
 **2. Paste the results into [the Sherlock page](https://sherlocksec.org).** It checks them in your browser and uploads nothing.
 
-[`scan.py`](scan.py) is a 632-line Python script with no dependencies. Read it before you run it. It reads the permission settings of Claude Code (per project, including every approval you saved with "don't ask again"), its MCP servers, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
+[`scan.py`](scan.py) is a 642-line Python script with no dependencies. Read it before you run it. It reads the permission settings of Claude Code (per project, including every approval you saved with "don't ask again"), its MCP servers, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
 
 ![Results for a real developer Mac](docs/results.jpg)
 
