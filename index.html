@@ -278,7 +278,7 @@ footer p { max-width: 52rem; }
           <li>
             <h3>Copy the scanner</h3>
             <p class="muted">One command. It runs <a href="https://github.com/Ning0Luo/sherlock/blob/main/scan.py">scan.py</a>, a 393-line Python script with no dependencies. It reads the permission settings of Claude Code, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like <span class="mono">~/.ssh</span> exist. It never opens a secret.</p>
-            <pre style="margin:0;max-height:none;white-space:pre-wrap;word-break:break-all;color:var(--ink)">curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 - | pbcopy</pre>
+            <pre style="margin:0;max-height:none;white-space:pre-wrap;word-break:break-all;color:var(--ink)">curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 - | pbcopy &amp;&amp; echo 'Copied. Paste it into the Sherlock page.'</pre>
             <div class="cta"><button type="button" class="btn primary" id="copy-cmd">Copy command</button><span class="muted" id="copy-msg" aria-live="polite" style="font-size:0.88rem"></span></div>
             <details><summary>Read the script first</summary><pre id="scanner-view"></pre></details>
           </li>
