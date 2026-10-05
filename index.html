@@ -2074,6 +2074,7 @@ const Engine = (() => {
     const match = pats => { const out = new Set(); (pats || []).forEach(p => { const re = globRe(String(p)); resNames.forEach(r => { if (re.test(r)) out.add(r); }); }); return out; };
     const agents = Object.entries(d.agents).map(([id, a]) => ({
       id, title: a.title || id, ai: a.injectable !== false, notes: a.notes || [],
+      trusted: !!a.trusted, strips: new Set(a.strips || []),
       r: match(a.read), w: match(a.write),
       flows: (a.flows || []).map(([s, t]) => [match([s]), match([t])]),
     }));
@@ -2095,7 +2096,7 @@ const Engine = (() => {
     const R = m.agents.map(a => new Set(a.r)), W = m.agents.map(a => new Set(a.w));
     m.gates.forEach((g, j) => { if (G >> j & 1) { g.r.forEach(x => R[g.agent].add(x)); g.w.forEach(x => W[g.agent].add(x)); } });
     const cor = new Map();
-    m.agents.forEach((a, i) => { if (C >> i & 1) cor.set(i, { why: 'hack' }); });
+    m.agents.forEach((a, i) => { if ((C >> i & 1) && !a.trusted) cor.set(i, { why: 'hack' }); });
     const taint = new Map();
     m.resNames.forEach(r => { if (m.res[r].untrusted) taint.set(r, { why: 'source' }); });
     const lab = {};
@@ -2104,15 +2105,15 @@ const Engine = (() => {
     while (ch) {
       ch = false;
       m.agents.forEach((a, i) => {
-        if (cor.has(i)) return;
+        if (cor.has(i) || a.trusted) return;
         for (const r of m.resNames) if (taint.has(r) && m.res[r].controls.includes(i)) { cor.set(i, { why: 'control', res: r }); ch = true; return; }
         if (agentic && a.ai) for (const r of [...R[i]].sort()) if (taint.has(r)) { cor.set(i, { why: 'inject', res: r }); ch = true; return; }
       });
       m.agents.forEach((a, i) => {
         if (cor.has(i)) return;
         for (const [sp, dp] of a.flows) for (const s of sp) { if (!R[i].has(s)) continue; for (const d of dp) { if (!W[i].has(d)) continue;
-          if (taint.has(s) && !taint.has(d)) { taint.set(d, { why: 'relay', agent: i, from: s }); ch = true; }
-          for (const l of lab[s].keys()) if (!lab[d].has(l)) { lab[d].set(l, { why: 'copy', agent: i, from: s, honest: true }); ch = true; } } }
+          if (taint.has(s) && !taint.has(d) && !a.strips.has('attacker')) { taint.set(d, { why: 'relay', agent: i, from: s }); ch = true; }
+          for (const l of lab[s].keys()) if (!lab[d].has(l) && !a.strips.has(l)) { lab[d].set(l, { why: 'copy', agent: i, from: s, honest: true }); ch = true; } } }
       });
       for (const i of cor.keys()) {
         for (const w of W[i]) if (!taint.has(w)) { taint.set(w, { why: 'written', agent: i }); ch = true; }
@@ -2132,10 +2133,12 @@ const Engine = (() => {
   const pop = x => { let c = 0; while (x) { c += x & 1; x = Math.floor(x / 2); } return c; };
   /* Pareto frontier of (agents hacked, approvals) for every policy, exhaustive. */
   function search(m, agentic) {
-    const n = m.agents.length, g = m.gates.length, bits = n + g;
+    const hackable = m.agents.map((a, i) => a.trusted ? -1 : i).filter(i => i >= 0);
+    const n = hackable.length, g = m.gates.length, bits = n + g;
     const cap = bits <= 16 ? bits : 5;
     const pairs = [];
-    for (let C = 0; C < (1 << n); C++) { const t = pop(C); if (t > cap) continue;
+    for (let c = 0; c < (1 << n); c++) { const t = pop(c); if (t > cap) continue;
+      let C = 0; hackable.forEach((ai, j) => { if (c >> j & 1) C |= 1 << ai; });
       for (let G = 0; G < (1 << g); G++) { const h = pop(G); if (t + h <= cap) pairs.push([C, G, t, h]); } }
     pairs.sort((a, b) => (a[2] + a[3]) - (b[2] + b[3]) || a[2] - b[2]);
     const front = m.policies.map(() => []);
@@ -2153,12 +2156,14 @@ const Engine = (() => {
      fixpoint) per worst case, i.e. per choice of exactly min(t, agents)
      hacked agents and min(h, prompts) approvals. verify.py re-checks it. */
   function certificate(d, m, k, t, h) {
-    const n = m.agents.length, g = m.gates.length, tt = Math.min(t, n), hh = Math.min(h, g);
+    const hackable = m.agents.map((a, i) => a.trusted ? -1 : i).filter(i => i >= 0);
+    const n = hackable.length, g = m.gates.length, tt = Math.min(t, n), hh = Math.min(h, g);
     const combos = (N, K) => { const out = []; const rec = (s, acc) => { if (acc.length === K) { out.push(acc.slice()); return; } for (let i = s; i < N; i++) { acc.push(i); rec(i + 1, acc); acc.pop(); } }; rec(0, []); return out; };
     const p = m.policies[k];
     const { targets, ...rule } = p;
     const invariants = [];
-    for (const cs of combos(n, tt)) for (const gs of combos(g, hh)) {
+    for (const cs0 of combos(n, tt)) for (const gs of combos(g, hh)) {
+      const cs = cs0.map(j => hackable[j]);
       const C = cs.reduce((x, i) => x | (1 << i), 0), G = gs.reduce((x, j) => x | (1 << j), 0);
       const res = analyze(m, C, G, true);
       if (violated(m, p, res)) return null;
@@ -2168,7 +2173,7 @@ const Engine = (() => {
         corrupted: [...res.cor.keys()].map(i => m.agents[i].id).sort(), tainted: [...res.taint.keys()].sort(), labels });
     }
     const setup = { agents: {}, resources: d.resources };
-    Object.entries(d.agents).forEach(([id, a]) => { setup.agents[id] = { read: a.read || [], write: a.write || [], injectable: a.injectable !== false, ask: a.ask || {}, flows: a.flows || [] }; });
+    Object.entries(d.agents).forEach(([id, a]) => { setup.agents[id] = { read: a.read || [], write: a.write || [], injectable: a.injectable !== false, ask: a.ask || {}, flows: a.flows || [], trusted: !!a.trusted, strips: a.strips || [] }; });
     return { format: 'sherlock-cert/1', issued: new Date().toISOString(), rule, budget: { agents: t, approvals: h }, setup, invariants };
   }
   return { load, analyze, search, violated, certificate };

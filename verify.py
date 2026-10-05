@@ -29,7 +29,9 @@ Rules (agent A, resource R):
     or if A is an AI model and reads a tainted resource.
   - A taken-over A taints everything it writes and copies every secret it can
     read into everything it can write.
-  - An honest A moves taint and secrets only along its declared flows.
+  - An honest A moves taint and secrets only along its declared flows, minus
+    what it strips ("attacker" for attacker text, or a secret label).
+  - A trusted agent is never hacked and never taken over.
 Untrusted resources (web pages) start tainted. Approving one of A's prompts
 adds that prompt's read and write rights to A.
 """
@@ -68,6 +70,8 @@ def main() -> None:
     gates = [(a, g, match(x.get("read")), match(x.get("write")))
              for a in ids for g, x in sorted((agents[a].get("ask") or {}).items())]
     ai = {a: agents[a].get("injectable", True) is not False for a in ids}
+    trusted = {a for a in ids if agents[a].get("trusted")}
+    strips = {a: set(agents[a].get("strips") or []) for a in ids}
     flows = {a: [(match([s]), match([d])) for s, d in agents[a].get("flows") or []] for a in ids}
     controls = {r: set(res[r].get("controls") or []) for r in names}
     untrusted = {r for r in names if res[r].get("untrusted")}
@@ -79,7 +83,8 @@ def main() -> None:
         fail(f"unknown rule kind {kind}")
     targets = (match(rule["to"]) if rule.get("to") else sinks) if kind == "no_flow" else set()
 
-    t = min(int(budget["agents"]), len(ids))
+    hackable = [a for a in ids if a not in trusted]
+    t = min(int(budget["agents"]), len(hackable))
     h = min(int(budget["approvals"]), len(gates))
     given = {}
     for inv in cert["invariants"]:
@@ -87,7 +92,7 @@ def main() -> None:
         given[key] = inv
 
     cases = 0
-    for C in itertools.combinations(ids, t):
+    for C in itertools.combinations(hackable, t):
         for G in itertools.combinations(range(len(gates)), h):
             cases += 1
             appr = frozenset((gates[j][0], gates[j][1]) for j in G)
@@ -116,7 +121,7 @@ def main() -> None:
             for a in ids:
                 steered = any(a in controls[r] for r in taint)
                 injected = ai[a] and bool(R[a] & taint)
-                if (steered or injected) and a not in cor:
+                if (steered or injected) and a not in cor and a not in trusted:
                     fail(f"{who}: {a} would be taken over but is not in the invariant")
                 if a in cor:
                     if not W[a] <= taint:
@@ -129,9 +134,9 @@ def main() -> None:
                     for sp, dp in flows[a]:
                         for s in sp & R[a]:
                             for d in dp & W[a]:
-                                if s in taint and d not in taint:
+                                if s in taint and d not in taint and "attacker" not in strips[a]:
                                     fail(f"{who}: honest {a} relays taint {s} -> {d}")
-                                if not lab[s] <= lab[d]:
+                                if not (lab[s] - strips[a]) <= lab[d]:
                                     fail(f"{who}: honest {a} relays a secret {s} -> {d}")
             # (3) no violation
             if kind == "no_flow" and any(rule["label"] in lab[x] for x in targets):
