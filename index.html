@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20aria-hidden%3D%22true%22%3E%3Cline%20x1%3D%2220.6%22%20y1%3D%2220.6%22%20x2%3D%2228.5%22%20y2%3D%2228.5%22%20stroke%3D%22%23D8B068%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2213%22%20cy%3D%2213%22%20r%3D%2210.2%22%20fill%3D%22none%22%20stroke%3D%22%23D8B068%22%20stroke-width%3D%222.4%22/%3E%3Cline%20x1%3D%228%22%20y1%3D%2210.5%22%20x2%3D%2217.5%22%20y2%3D%228.5%22%20stroke%3D%22%23F2E7D3%22%20stroke-width%3D%221.4%22%20opacity%3D%220.7%22/%3E%3Cline%20x1%3D%228%22%20y1%3D%2210.5%22%20x2%3D%2212.5%22%20y2%3D%2218%22%20stroke%3D%22%23F2E7D3%22%20stroke-width%3D%221.4%22%20opacity%3D%220.7%22/%3E%3Cline%20x1%3D%2217.5%22%20y1%3D%228.5%22%20x2%3D%2212.5%22%20y2%3D%2218%22%20stroke%3D%22%23E2573B%22%20stroke-width%3D%222%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%2210.5%22%20r%3D%222%22%20fill%3D%22%23F2E7D3%22/%3E%3Ccircle%20cx%3D%2217.5%22%20cy%3D%228.5%22%20r%3D%222.2%22%20fill%3D%22%23E2573B%22/%3E%3Ccircle%20cx%3D%2212.5%22%20cy%3D%2218%22%20r%3D%222.2%22%20fill%3D%22%23E2573B%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: a dark security console. One wide stage; the hero pairs a headline
    with a live attack graph. Orange is always the attacker's path; indigo is
@@ -18,9 +18,9 @@
   --ink: #F2E7D3; --muted: #B5A48A; --dim: #7E6E57;
   --accent: #D8B068; --accent-dim: rgba(216,176,104,0.12);
   --attack: #E2573B; --attack-dim: rgba(226,87,59,0.13); --attack-glow: rgba(226,87,59,0.38);
-  --display: "Unbounded", "Arial Black", sans-serif;
-  --body: "Geist", "Helvetica Neue", Arial, sans-serif;
-  --mono: "Geist Mono", Menlo, Consolas, monospace;
+  --display: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", Menlo, Consolas, monospace;
   --wide: 78rem; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -47,7 +47,7 @@ button, select, textarea { font: inherit; color: inherit; }
 nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 0.9rem; margin-inline: -1rem; padding-inline: 1rem;
   background: rgba(12,9,6,0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(47,37,25,0.7); }
 nav .inner { max-width: var(--wide); margin-inline: auto; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.brand { font-family: var(--display); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.7rem; color: var(--ink); text-decoration: none; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 1.45rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.7rem; color: var(--ink); text-decoration: none; }
 .mark { width: 1.75rem; height: 1.75rem; display: block; flex: none; }
 .mark::before { left: 0; top: 0; background: var(--accent); }
 .mark::after { right: 0; bottom: 0; background: var(--attack); mix-blend-mode: screen; }
@@ -63,7 +63,7 @@ nav ul a:hover { color: var(--ink); }
 /* hero */
 .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 3rem; align-items: center; padding-block: 4.5rem 3rem; }
 .hero-text { display: flex; flex-direction: column; gap: 1.6rem; min-width: 0; }
-.hero h1 { font-size: clamp(2.3rem, 5.2vw, 4.4rem); font-weight: 800; }
+.hero h1 { font-size: clamp(2.8rem, 6.2vw, 5.3rem); font-weight: 700; line-height: 1.02; }
 .hero h1 .hot { color: var(--attack); text-shadow: 0 0 2.5rem var(--attack-glow); }
 .lede { font-size: clamp(1.08rem, 1.7vw, 1.25rem); color: var(--muted); max-width: 34rem; }
 .cta { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
@@ -95,7 +95,7 @@ nav ul a:hover { color: var(--ink); }
 /* sections */
 main { display: flex; flex-direction: column; gap: 6.5rem; }
 .sec-head { display: flex; flex-direction: column; gap: 0.9rem; max-width: 46rem; margin-bottom: 2rem; }
-.sec-head h2 { font-size: clamp(1.7rem, 3.4vw, 2.7rem); font-weight: 700; }
+.sec-head h2 { font-size: clamp(2rem, 4vw, 3.1rem); font-weight: 700; }
 .sec-head p { color: var(--muted); font-size: 1.08rem; }
 
 /* scan console */
@@ -296,6 +296,10 @@ footer p { max-width: 52rem; }
 .lg-rule { display: flex; gap: 0.7rem; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 0.55rem 0.7rem; border: 1px solid var(--line); border-radius: 0.5rem; background: var(--bg2); cursor: pointer; font-size: 0.9rem; text-align: left; color: var(--ink); width: 100%; }
 .lg-rule[aria-pressed="true"] { border-color: var(--accent); }
 .lg-rule .cost { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); }
+
+/* type: a Dutch-style serif for headlines, so tighten nothing and use lining figures */
+h1, h2 { letter-spacing: -0.005em; font-weight: 700; }
+h1, h2, .stat b, .big, .scan-head h3 { font-variant-numeric: lining-nums; }
 </style>
 
 <style>body{margin:0}</style>
