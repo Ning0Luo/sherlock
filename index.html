@@ -285,6 +285,7 @@ footer p { max-width: 52rem; }
     <li><a href="#scan">Scan your Mac</a></li>
     <li><a href="#certified">Certified</a></li>
     <li><a href="#openshell">OpenShell</a></li>
+    <li><a href="#langgraph">LangGraph</a></li>
     <li><a href="#why">Why now</a></li>
     <li><a href="#how">How it works</a></li>
     <li><a href="#pilot">Pilot</a></li>
@@ -461,6 +462,32 @@ footer p { max-width: 52rem; }
         </tbody>
       </table></div>
       <p class="muted" style="font-size:0.86rem">Checking an OpenShell fleet takes the policy files you already have, plus a short list of which volumes the sandboxes share and where secrets live. <a href="#pilot">Ask us to run it on yours.</a></p>
+    </div>
+  </section>
+
+  <section class="wide" id="langgraph" aria-labelledby="lg-h">
+    <div class="sec-head">
+      <p class="kicker">Works with LangGraph</p>
+      <h2 id="lg-h">Check a multi-agent app before you ship it</h2>
+      <p>Sherlock reads a compiled <a href="https://github.com/langchain-ai/langgraph">LangGraph</a> graph without running it: its nodes, the tools each one can call, the state they share, which nodes read which keys, and which tools wait for a person to approve.</p>
+    </div>
+    <div class="os-grid">
+      <div class="os-card">
+        <span class="lbl">Three lines</span>
+        <div class="code">from sherlock.langgraph import check<br>print(check(app, rules,<br>&#160;&#160;secrets={"data:crm": "customer_pii"}))</div>
+        <p>Nodes become agents, ToolNodes their rights, state keys shared places, <span class="mono">input_schema</span> what a node reads, and <span class="mono">interrupt_before</span> your approval. Unknown tools are assumed to do anything.</p>
+      </div>
+      <div class="os-card us">
+        <span class="lbl">Example: a support bot with web search, a CRM lookup and email</span>
+        <div class="table-wrap"><table class="os-table" style="min-width:26rem">
+          <thead><tr><th>Rule</th><th>As usually written</th><th>Hardened</th></tr></thead>
+          <tbody>
+            <tr><td>Customer data never leaves</td><td><span class="pill fail">FAIL</span></td><td><span class="pill pass">PASS · CERTIFIED</span></td></tr>
+            <tr><td>Web content never steers the account agent</td><td><span class="pill fail">FAIL</span></td><td><span class="pill pass">PASS · CERTIFIED</span></td></tr>
+          </tbody>
+        </table></div>
+        <p>As usually written, every node shares <span class="mono">messages</span>, so text from a web page reaches the agent holding customer records. Giving each node only the keys it needs, and approving every email, fixes both. Sherlock also shows the one way left: approving an email that contains customer data.</p>
+      </div>
     </div>
   </section>
 
