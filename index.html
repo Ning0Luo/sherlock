@@ -2362,20 +2362,22 @@ const cost = p => !p ? 'never' : p.t === 0 && p.h === 0 ? 'FREE' : [p.t ? `${p.t
 
 function path(m, p, pt) {      // the attack as steps, plus which diagram nodes it touches
   const steps = [], hit = new Set(), res = pt.res, seenA = new Set(), seenR = new Set();
-  const T = i => m.agents[i].id, mark = r => NODE_OF[r] && hit.add(NODE_OF[r]);
-  m.gates.forEach((g, j) => { if (pt.G >> j & 1) { steps.push(`You approve ${T(g.agent)}'s ${g.name.replace('tool:', '')}.`); hit.add('email'); } });
-  const agent = i => { if (seenA.has(i)) return; seenA.add(i); hit.add(T(i)); const w = res.cor.get(i);
+  const NAME = { account: 'account agent' }, T = i => NAME[m.agents[i].id] || m.agents[i].id;
+  const where = r => r === 'web' ? 'a web page' : r === 'state:messages' ? 'the customer message' : r.replace('state:', '');
+  const mark = r => NODE_OF[r] && hit.add(NODE_OF[r]);
+  m.gates.forEach((g, j) => { if (pt.G >> j & 1) { steps.push(`You click Allow on the ${T(g.agent)}'s ${g.name.replace('tool:', '')}.`); hit.add('email'); } });
+  const agent = i => { if (seenA.has(i)) return; seenA.add(i); hit.add(m.agents[i].id); const w = res.cor.get(i);
     if (w.why === 'hack') steps.push(`The attacker breaks into the ${T(i)}.`);
-    else { taint(w.res); steps.push(`The ${T(i)} reads ${w.res.replace('state:', '')} and follows the attacker's text.`); } };
+    else { taint(w.res); steps.push(`The ${T(i)} reads ${where(w.res)} and follows the attacker's text.`); } };
   const taint = r => { if (seenR.has(r)) return; seenR.add(r); mark(r); const w = res.taint.get(r);
     if (w.why === 'source') steps.push(r === 'web' ? 'An attacker plants text on a web page.' : `The attacker writes the ${r.replace('state:', '')}.`);
-    else if (w.why === 'written') { agent(w.agent); hit.add(T(w.agent)); }
-    else { taint(w.from); hit.add(T(w.agent)); steps.push(`The ${T(w.agent)} passes it on to ${r.replace('state:', '')} as its normal job.`); } };
+    else if (w.why === 'written') { agent(w.agent); hit.add(m.agents[w.agent].id); }
+    else { taint(w.from); hit.add(m.agents[w.agent].id); steps.push(`The ${T(w.agent)} passes it on to ${where(r)} as its normal job.`); } };
   if (p.kind === 'hijack') agent(m.idx[p.agent]);
   else { const hops = []; let cur = pt.target;
     for (;;) { const w = res.lab[cur].get(p.label); if (w.why === 'origin') break; hops.push([w, cur]); cur = w.from; }
     mark(cur); steps.push('The target: customer records in the CRM.');
-    for (const [w, d] of hops.reverse()) { hit.add(T(w.agent)); mark(d);
+    for (const [w, d] of hops.reverse()) { hit.add(m.agents[w.agent].id); mark(d);
       if (!w.honest) agent(w.agent);
       steps.push(d === 'net' ? `The ${T(w.agent)} sends it out.` : `The ${T(w.agent)} passes it to ${d.replace('state:', '')}.`); } }
   return { steps, hit };
