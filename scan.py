@@ -5,7 +5,7 @@ rules, modes, plugin and MCP server names) and checks whether secret folders
 such as ~/.ssh exist. It never opens secrets, never prints file contents or
 paths under your home folder, and sends nothing anywhere: output goes to stdout."""
 from __future__ import annotations
-import fnmatch, json, os, sys, time
+import fnmatch, json, os, shutil, sys, time
 try:
     import tomllib
 except ModuleNotFoundError:
@@ -88,6 +88,7 @@ class Found:
     notes: list[str] = field(default_factory=list)
     places: list[str] = field(default_factory=list)      # extra resources this agent brings (its project)
     obeys: list[str] = field(default_factory=list)       # instruction files it follows (globs); empty = all projects'
+    coverage: str = "read"   # "read": settings parsed; "assumed": defaults assumed; "worst": modeled as unrestricted
 
 
 def exists(rel: str) -> bool:
@@ -168,23 +169,19 @@ CLAUDE_MANAGED = [Path("/Library/Application Support/ClaudeCode/managed-settings
                   Path("/etc/claude-code/managed-settings.json")]
 SHELL_ALL = {"read": ["*"], "write": ["*", "net"]}
 
-# What a pre-approved shell command can reach, by its first word(s).
+# What a pre-approved shell command can reach, by its first word(s). Shell
+# redirection (`echo x >> ~/.zshrc`) lets any command write any file, so every
+# approved command at least reads and writes everywhere. Only commands with no
+# known way to run other programs stay off the network.
 CMD_NET = {"curl", "wget", "http", "https", "httpie", "nc", "ncat", "netcat", "ssh", "scp", "sftp",
            "ftp", "telnet", "gh", "glab", "aws", "gcloud", "az", "kubectl", "helm", "docker",
-           "podman", "vercel", "netlify", "heroku", "fly", "firebase", "wrangler"}
-CMD_FULL = {"python", "python3", "node", "ruby", "perl", "php", "bash", "sh", "zsh", "fish",
-            "osascript", "eval", "exec", "xargs", "env", "sudo", "npx", "uvx", "uv", "pip",
-            "pip3", "npm", "yarn", "pnpm", "bun", "deno", "make", "cmake", "cargo", "go",
-            "java", "mvn", "gradle", "open", "lake", "swift", "dotnet", "pytest", "jupyter"}
-CMD_READ = {"cat", "head", "tail", "less", "more", "grep", "rg", "ag", "find", "fd", "ls", "wc",
-            "diff", "file", "stat", "tree", "jq", "sort", "uniq", "cut", "du", "df", "pwd",
-            "which", "echo", "printf", "date", "whoami", "ps", "pbpaste", "strings", "md5",
-            "shasum", "sha256sum", "xxd", "hexdump", "base64", "awk"}
-CMD_WRITE = {"cp", "mv", "rm", "mkdir", "rmdir", "touch", "tee", "sed", "chmod", "chown", "ln",
-             "unzip", "tar", "zip", "gzip", "gunzip", "patch", "truncate", "dd"}
-CMD_PROJ = {"pdflatex", "latexmk", "xelatex", "lualatex", "bibtex", "biber", "tsc", "eslint",
-            "prettier", "black", "ruff", "mypy", "rustc", "gcc", "clang", "g++", "javac"}
-GIT_NET = {"push", "fetch", "pull", "clone", "remote", "ls-remote", "submodule"}
+           "podman", "vercel", "netlify", "heroku", "fly", "firebase", "wrangler", "rsync"}
+CMD_NO_EXEC = {"cat", "head", "tail", "grep", "ls", "wc", "diff", "file", "stat", "tree", "jq",
+               "cut", "du", "df", "pwd", "which", "echo", "printf", "date", "whoami", "ps",
+               "strings", "md5", "shasum", "sha256sum", "xxd", "hexdump", "base64", "uniq", "cp",
+               "mv", "rm", "mkdir", "rmdir", "touch", "tee", "chmod", "ln", "unzip", "gzip",
+               "gunzip", "truncate", "dd", "pbpaste", "basename", "dirname", "realpath", "nl"}
+SHELL_RW = {"read": ["*"], "write": ["*"]}
 
 
 def shell_rights(cmd: str, proj: str = "proj:*") -> tuple[dict, str]:
@@ -193,22 +190,11 @@ def shell_rights(cmd: str, proj: str = "proj:*") -> tuple[dict, str]:
     if not words:
         return SHELL_ALL, "any shell command"
     w0 = words[0].rsplit("/", 1)[-1]
-    if w0 == "git":
-        sub = words[1] if len(words) > 1 else ""
-        if sub in GIT_NET or not sub:
-            return {"read": ["web", proj], "write": [proj, "net"]}, "git with network access"
-        return {"read": [proj], "write": [proj]}, f"local git {sub}"
     if w0 in CMD_NET:
-        return {"read": ["*", "web"], "write": ["net"]}, f"{w0}: sends data over the network"
-    if w0 in CMD_FULL:
-        return SHELL_ALL, f"{w0}: runs arbitrary code"
-    if w0 in CMD_READ:
-        return {"read": ["*"], "write": []}, f"{w0}: reads any file"
-    if w0 in CMD_WRITE:
-        return {"read": ["*"], "write": ["*"]}, f"{w0}: changes any file"
-    if w0 in CMD_PROJ:
-        return {"read": [proj], "write": [proj]}, f"{w0}: builds project files"
-    return SHELL_ALL, f"{w0}: unrecognized command, treated as a full shell"
+        return {"read": ["*", "web"], "write": ["*", "net"]}, f"{w0}: sends data over the network"
+    if w0 in CMD_NO_EXEC:
+        return dict(SHELL_RW), f"{w0}: reads any file, and writes any file through redirection"
+    return SHELL_ALL, f"{w0}: can run other programs (directly, through hooks, plugins or options), treated as a full shell"
 
 
 def path_places(path: str, proj: str) -> list[str]:
@@ -233,14 +219,12 @@ def path_places(path: str, proj: str) -> list[str]:
 
 MCP_CATALOG = [   # (substring of name or command, reach, plain description)
     (("playwright", "puppeteer", "browser", "chrome", "selenium", "browserbase"),
-     {"read": ["web"], "write": ["net"]}, "drives a web browser"),
-    (("fetch", "search", "brave", "tavily", "exa", "firecrawl", "perplexity", "web"),
+     {"read": ["web", "*"], "write": ["net", "*"]}, "drives a web browser, which can also open and save local files"),
+    (("fetch", "search", "brave", "tavily", "exa", "firecrawl", "perplexity"),
      {"read": ["web"], "write": ["net"]}, "fetches web content"),
-    (("github", "gitlab", "linear", "jira", "atlassian", "slack", "notion", "gmail", "google",
+    (("github", "gitlab", "linear", "jira", "atlassian", "slack", "notion", "gmail",
       "drive", "sentry", "discord", "telegram", "email", "calendar"),
      {"read": ["web"], "write": ["net"]}, "reads and writes a hosted service"),
-    (("filesystem", "file-system", "files", "desktop-commander", "shell", "terminal", "exec"),
-     {"read": ["*"], "write": ["*"]}, "reads and writes local files"),
 ]
 
 
@@ -249,9 +233,7 @@ def mcp_reach(name: str, spec: dict) -> tuple[dict, str]:
     for subs, reach, desc in MCP_CATALOG:
         if any(x in key for x in subs):
             return reach, desc
-    if spec.get("url") or spec.get("type") in ("http", "sse"):
-        return {"read": ["web"], "write": ["net"]}, "remote server: assumed to read and send over the network"
-    return {"read": ["proj:*"], "write": []}, "local server, unknown tools: assumed to read project files"
+    return dict(SHELL_ALL, read=["*", "web"]), "unrecognized server: assumed able to do anything"
 
 
 def proj_slug(path: str) -> str:
@@ -454,6 +436,8 @@ def claude_desktop() -> Found | None:
     f = Found("claude_desktop", "Claude desktop chat", read=["web", "cowork"],
               write=["net", "cowork"], control_paths=[str(cfg).replace(str(HOME), "~")])
     f.notes.append("web search and fetch run without asking; Cowork folder open")
+    f.coverage = "assumed"
+    f.notes.append("desktop extensions and connectors are not read")
     servers = load_json(cfg).get("mcpServers") or {}
     for srv in mcp:
         reach, desc = mcp_reach(srv, servers[srv] if isinstance(servers[srv], dict) else {})
@@ -516,6 +500,7 @@ def cursor() -> Found | None:
               control_paths=["~/.cursor/mcp.json", "~/.cursor/rules",
                              "~/Library/Application Support/Cursor/User/settings.json"],
               reads_project_instructions=True, uses_shell=True)
+    f.coverage = "assumed"
     f.notes.append("assumed defaults: edits apply without asking, terminal commands ask, "
                    "web search open (auto-run mode not detected)")
     return f
@@ -528,7 +513,120 @@ def openclaw(parse: bool) -> Found | None:
               control_paths=["~/.openclaw/openclaw.json", "~/.openclaw/exec-approvals.json",
                              "~/.openclaw/agents", "~/.openclaw/cron"], uses_shell=True)
     f.notes.append("config not read (its folder holds credentials): modeled as worst case")
+    f.coverage = "worst"
     return f
+
+
+# --- every other agent: detected, then modeled as unrestricted ---------------
+# Each entry: (key, title, config paths under ~, apps, command names, editor
+# extension ids). Any one signal is enough. These agents' settings are not read
+# yet, so each is modeled as able to read and write everything and use the
+# network without asking. A PASS therefore never depends on an unread agent.
+
+OTHER_AGENTS = [
+    ("copilot", "GitHub Copilot (agent mode / CLI)", [".copilot", ".config/github-copilot"], [], ["copilot"],
+     ["github.copilot-chat", "github.copilot"]),
+    ("windsurf", "Windsurf", [".codeium/windsurf"], ["Windsurf.app"], ["windsurf"], ["codeium.windsurf"]),
+    ("gemini_cli", "Gemini CLI", [".gemini"], [], ["gemini"], ["google.geminicodeassist"]),
+    ("aider", "Aider", [".aider.conf.yml"], [], ["aider"], []),
+    ("continue", "Continue", [".continue"], [], ["cn"], ["continue.continue"]),
+    ("cline", "Cline", [".cline"], [], ["cline"], ["saoudrizwan.claude-dev"]),
+    ("roo", "Roo Code", [], [], [], ["rooveterinaryinc.roo-cline"]),
+    ("kilo", "Kilo Code", [".kilocode"], [], ["kilocode"], ["kilocode.kilo-code"]),
+    ("augment", "Augment", [".augment"], [], ["auggie"], ["augment.vscode-augment"]),
+    ("amazon_q", "Amazon Q / Kiro CLI", [".aws/amazonq"], [], ["q", "kiro-cli"], ["amazonwebservices.amazon-q-vscode"]),
+    ("kiro", "Kiro", [".kiro"], ["Kiro.app"], ["kiro"], []),
+    ("zed", "Zed agent", [".config/zed"], ["Zed.app"], ["zed"], []),
+    ("cursor_cli", "Cursor CLI", [], [], ["cursor-agent"], []),
+    ("opencode", "OpenCode", [".config/opencode"], [], ["opencode"], []),
+    ("goose", "Goose", [".config/goose"], [], ["goose"], []),
+    ("amp", "Amp", [".config/amp"], [], ["amp"], ["sourcegraph.amp"]),
+    ("crush", "Crush", [".config/crush"], [], ["crush"], []),
+    ("qwen_code", "Qwen Code", [".qwen"], [], ["qwen"], []),
+    ("factory", "Factory Droid", [".factory"], [], ["droid"], []),
+    ("junie", "JetBrains Junie / AI Assistant", [], [], [], []),
+    ("trae", "Trae", [".trae"], ["Trae.app"], [], []),
+    ("antigravity", "Google Antigravity", [".antigravity"], ["Antigravity.app"], [], []),
+    ("chatgpt", "ChatGPT desktop", [], ["ChatGPT.app"], [], ["openai.chatgpt"]),
+    ("warp", "Warp agent", [".warp"], ["Warp.app"], [], []),
+    ("comet", "Perplexity Comet (AI browser)", [], ["Comet.app"], [], []),
+    ("atlas", "ChatGPT Atlas (AI browser)", [], ["ChatGPT Atlas.app"], [], []),
+    ("dia", "Dia (AI browser)", [], ["Dia.app"], [], []),
+]
+EXT_DIRS = [".vscode/extensions", ".vscode-insiders/extensions", ".cursor/extensions",
+            ".windsurf/extensions", ".vscode-oss/extensions", ".kiro/extensions", ".trae/extensions"]
+AI_WORDS = ("copilot", "gpt", "claude", "gemini", "llm", "agent", "assistant", "codeium",
+            "cody", "codex", "openai", "anthropic", "ollama", "chatbot", "aicoder", "ai-")
+KNOWN_EXT = {"anthropic.claude-code"}   # modeled by its own collector
+NOT_CHECKED = [
+    "agents running inside containers, VMs or remote dev boxes (scan those machines too)",
+    "browser extensions that act as agents",
+    "cloud agents that act on your accounts from outside this Mac (e.g. hosted coding agents with repo access)",
+    "agents installed under another macOS user",
+]
+
+
+def _which(cmd: str) -> bool:
+    return shutil.which(cmd) is not None
+
+
+def _extensions() -> dict[str, str]:
+    """Installed editor extension ids -> the editor folder they were found in."""
+    out = {}
+    for d in EXT_DIRS:
+        base = HOME / d
+        if not base.is_dir():
+            continue
+        try:
+            names = os.listdir(base)
+        except OSError:
+            continue
+        for n in names:
+            ext_id = n.lower().rsplit("-", 1)[0] if n[-1:].isdigit() else n.lower()
+            out.setdefault(ext_id, d.split("/")[0].lstrip("."))
+    return out
+
+
+def worst_case(name: str, title: str, how: list[str], ctl: list[str]) -> Found:
+    f = Found(name, title, read=["*", "web"], write=["*", "net"], control_paths=ctl,
+              reads_project_instructions=True, uses_shell=True, coverage="worst")
+    f.notes.append("found: " + "; ".join(how))
+    f.notes.append("settings not read yet: modeled as able to do anything without asking")
+    return f
+
+
+def other_agents() -> list[Found]:
+    exts = _extensions()
+    apps = lambda a: (Path("/Applications") / a).exists() or (HOME / "Applications" / a).exists()
+    found, claimed = [], set(KNOWN_EXT)
+    for key, title, paths, app_names, cmds, ext_ids in OTHER_AGENTS:
+        how = [f"~/{p}" for p in paths if exists(p)]
+        how += [f"/Applications/{a}" for a in app_names if apps(a)]
+        how += [f"`{c}` command" for c in cmds if _which(c)]
+        for e in ext_ids:
+            if e in exts:
+                how.append(f"{e} extension in {exts[e]}")
+                claimed.add(e)
+        if key == "junie":
+            jb = APP_SUPPORT / "JetBrains"
+            if jb.is_dir() and any((x / "plugins").is_dir() and any(n.lower().startswith(("junie", "ml-llm", "fullline"))
+                                   for n in os.listdir(x / "plugins")) for x in jb.iterdir() if x.is_dir()):
+                how.append("JetBrains AI plugin")
+        if how:
+            found.append(worst_case(key, title, how, [f"~/{p}" for p in paths]))
+    for e, editor in sorted(exts.items()):
+        if e in claimed or not any(w in e for w in AI_WORDS):
+            continue
+        name = "ext_" + "".join(c if c.isalnum() else "_" for c in e)[:40]
+        found.append(worst_case(name, f"Unrecognized AI extension {e}", [f"extension in {editor}"], []))
+    return found
+
+
+def coverage_report(found: list[Found]) -> dict:
+    return {"read": [f.title for f in found if f.coverage == "read"],
+            "assumed": [f.title for f in found if f.coverage == "assumed"],
+            "worst": [f.title for f in found if f.coverage == "worst"],
+            "not_checked": NOT_CHECKED}
 
 
 # ------------------------------------------------------------- model builder
@@ -605,7 +703,7 @@ def build_system(found: list[Found], secrets_present) -> System:
 
 
 def main() -> None:
-    found = claude_code(None) + [x for x in (claude_desktop(), codex(), cursor(), openclaw(False)) if x]
+    found = claude_code(None) + [x for x in (claude_desktop(), codex(), cursor(), openclaw(False)) if x] + other_agents()
     ig = HOME / ".agentwatch/ignore"
     skip = {l.strip() for l in ig.read_text().splitlines() if l.strip()} if ig.exists() else set()
     found = [f for f in found if f.name not in skip]
@@ -623,6 +721,7 @@ def main() -> None:
                                              ("sink", x.sink), ("controls", x.controls)) if v}
                       for r, x in s.resources.items()},
         "policies": [{k: v for k, v in p.__dict__.items() if v is not None} for p in s.policies],
+        "coverage": coverage_report(found),
     }
     text = json.dumps(out, indent=1).replace(str(Path.home()), "~")
     if "--print" in sys.argv[1:]:
@@ -634,8 +733,9 @@ def main() -> None:
     except Exception:
         print(text)          # no clipboard (e.g. Linux): print it; save with > scan.json
         return
-    n = len(out["agents"])
-    print(f"Copied: {n} agent{'s' if n != 1 else ''} found. Paste it into the page at https://sherlocksec.org")
+    n, w = len(out["agents"]), len(out["coverage"]["worst"])
+    print(f"Copied: {n} agent{'s' if n != 1 else ''} found" + (f", {w} modeled as unrestricted because their settings are not read yet" if w else "")
+          + ". Paste it into the page at https://sherlocksec.org")
 
 
 if __name__ == "__main__":
