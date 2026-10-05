@@ -369,7 +369,7 @@ footer p { max-width: 52rem; }
         <ol class="scan-steps">
           <li>
             <h3>Copy the scanner</h3>
-            <p class="muted">One command. It runs <a href="https://github.com/Ning0Luo/sherlock/blob/main/scan.py">scan.py</a>, a 742-line Python script with no dependencies. It finds every AI agent it can on your Mac (Claude Code per project with every approval you saved, MCP servers, Codex, Cursor, Claude desktop, Copilot, Windsurf, Gemini CLI, Aider, Cline and 20 more) and models any whose settings it cannot read as unrestricted, and checks whether folders like <span class="mono">~/.ssh</span> exist. It never opens a secret.</p>
+            <p class="muted">One command. It runs <a href="https://github.com/Ning0Luo/sherlock/blob/main/scan.py">scan.py</a>, a 1511-line Python script with no dependencies. It finds every AI agent it can on your Mac and reads the approval settings of 15 of them: Claude Code (per project, with every approval you saved), Codex, GitHub Copilot in VS Code and its CLI, Gemini CLI, Cline, Aider, Continue, OpenCode, Goose, Zed, Kiro, Amazon Q, Devin and their MCP servers. Agents whose settings it cannot read are modeled as unrestricted, and checks whether folders like <span class="mono">~/.ssh</span> exist. It never opens a secret.</p>
             <pre style="margin:0;max-height:none;white-space:pre-wrap;word-break:break-all;color:var(--ink)">curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 -</pre>
             <div class="cta"><button type="button" class="btn primary" id="copy-cmd">Copy command</button><span class="muted" id="copy-msg" aria-live="polite" style="font-size:0.88rem"></span></div>
             <details><summary>Read the script first</summary><pre id="scanner-view"></pre></details>
@@ -602,6 +602,217 @@ class System:
     agents: dict
     resources: dict
     policies: list
+
+import re
+
+class YamlError(ValueError):
+    pass
+
+
+def _strip_comment(line: str) -> str:
+    out, q = [], None
+    for i, c in enumerate(line):
+        if q:
+            if c == q:
+                q = None
+        elif c in "'\"":
+            q = c
+        elif c == "#" and (i == 0 or line[i - 1] in " \t"):
+            break
+        out.append(c)
+    return "".join(out).rstrip()
+
+
+def _scalar(tok: str):
+    t = tok.strip()
+    if not t:
+        return None
+    if t[0] in "'\"" and t[-1] == t[0] and len(t) >= 2:
+        return t[1:-1].replace("''", "'") if t[0] == "'" else json.loads(t)
+    low = t.lower()
+    if low in ("true", "yes"):
+        return True
+    if low in ("false", "no"):
+        return False
+    if low in ("null", "~"):
+        return None
+    if re.fullmatch(r"-?\d+", t):
+        return int(t)
+    if re.fullmatch(r"-?\d+\.\d*", t):
+        return float(t)
+    return t
+
+
+def _flow(s: str, i: int = 0):
+    """Parse a flow value starting at s[i]; return (value, next index)."""
+    while i < len(s) and s[i] == " ":
+        i += 1
+    if i < len(s) and s[i] in "[{":
+        close = "]" if s[i] == "[" else "}"
+        is_map = s[i] == "{"
+        out = {} if is_map else []
+        i += 1
+        while True:
+            while i < len(s) and s[i] in " ,":
+                i += 1
+            if i >= len(s):
+                raise YamlError("unclosed flow collection")
+            if s[i] == close:
+                return out, i + 1
+            if is_map:
+                k, i = _flow_token(s, i, ":")
+                i += 1
+                v, i = _flow(s, i)
+                out[_scalar(k)] = v
+            else:
+                v, i = _flow(s, i)
+                out.append(v)
+    tok, i = _flow_token(s, i, ",]}")
+    return _scalar(tok), i
+
+
+def _flow_token(s: str, i: int, stops: str):
+    j, q = i, None
+    while j < len(s):
+        c = s[j]
+        if q:
+            if c == q:
+                q = None
+        elif c in "'\"":
+            q = c
+        elif c in stops:
+            break
+        j += 1
+    return s[i:j], j
+
+
+class MiniYaml:
+    def __init__(self, text: str):
+        self.lines = []
+        for raw in text.splitlines():
+            if raw.strip().startswith("---") and not self.lines:
+                continue
+            line = _strip_comment(raw)
+            if line.strip():
+                if "\t" in line[: len(line) - len(line.lstrip())]:
+                    raise YamlError("tabs are not allowed for indentation")
+                self.lines.append((len(line) - len(line.lstrip()), line.strip()))
+        self.i = 0
+
+    def parse(self):
+        if not self.lines:
+            return None
+        return self.block(self.lines[0][0])
+
+    def block(self, ind: int):
+        if self.lines[self.i][1].startswith("- ") or self.lines[self.i][1] == "-":
+            return self.seq(ind)
+        return self.map(ind)
+
+    def value_after(self, rest: str, ind: int):
+        rest = rest.strip()
+        if rest in ("|", ">", "|-", ">-"):
+            raise YamlError("block scalars are not supported; install PyYAML")
+        if rest:
+            return _flow(rest)[0] if rest[0] in "[{" else _scalar(rest)
+        if self.i < len(self.lines) and self.lines[self.i][0] > ind:
+            return self.block(self.lines[self.i][0])
+        if self.i < len(self.lines) and self.lines[self.i][0] == ind and self.lines[self.i][1].startswith("-"):
+            return self.seq(ind)
+        return None
+
+    @staticmethod
+    def split_key(text: str):
+        """'key: rest' -> (key, rest); None when the line is not a mapping entry."""
+        key, j = _flow_token(text, 0, ":")
+        if j >= len(text) or (j + 1 < len(text) and text[j + 1] != " "):
+            return None
+        return key.strip(), text[j + 1:]
+
+    def map(self, ind: int):
+        out = {}
+        while self.i < len(self.lines) and self.lines[self.i][0] == ind:
+            text = self.lines[self.i][1]
+            if text.startswith("- ") or text == "-":
+                break
+            kv = self.split_key(text)
+            if kv is None:
+                raise YamlError(f"expected 'key: value', got {text!r}")
+            self.i += 1
+            out[_scalar(kv[0])] = self.value_after(kv[1], ind)
+        return out
+
+    def seq(self, ind: int):
+        out = []
+        while self.i < len(self.lines) and self.lines[self.i][0] == ind:
+            text = self.lines[self.i][1]
+            if not (text.startswith("- ") or text == "-"):
+                break
+            item = text[1:].strip()
+            if not item:
+                self.i += 1
+                nested = self.i < len(self.lines) and self.lines[self.i][0] > ind
+                out.append(self.block(self.lines[self.i][0]) if nested else None)
+            elif item[0] in "[{" or self.split_key(item) is None:
+                self.i += 1
+                out.append(_flow(item)[0] if item[0] in "[{" else _scalar(item))
+            else:
+                # "- key: value": a map whose further keys line up with "key"
+                sub = ind + len(text) - len(item)
+                self.lines[self.i] = (sub, item)
+                out.append(self.map(sub))
+        return out
+
+
+
+def load_jsonc(text: str):
+    """Parse JSON that may contain comments and trailing commas."""
+    out, i, n, q = [], 0, len(text), False
+    while i < n:
+        c = text[i]
+        if q:
+            out.append(c)
+            if c == "\\" and i + 1 < n:
+                out.append(text[i + 1])
+                i += 2
+                continue
+            if c == '"':
+                q = False
+        elif c == '"':
+            q = True
+            out.append(c)
+        elif text.startswith("//", i):
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+            continue
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            i = n if j < 0 else j + 2
+            continue
+        else:
+            out.append(c)
+        i += 1
+    cleaned = re.sub(r",(\s*[}\]])", r"\1", "".join(out))
+    return json.loads(cleaned) if cleaned.strip() else {}
+
+
+def load_config(path: Path):
+    """Read a JSON, JSONC or YAML config; {} when missing or unreadable."""
+    try:
+        text = Path(path).read_text()
+    except OSError:
+        return {}
+    try:
+        if Path(path).suffix in (".yaml", ".yml"):
+            try:
+                import yaml  # type: ignore
+                return yaml.safe_load(text) or {}
+            except ImportError:
+                return MiniYaml(text).parse() or {}
+        return load_jsonc(text)
+    except Exception:
+        return {}
+
 
 HOME = Path.home()
 APP_SUPPORT = HOME / "Library/Application Support"
@@ -1077,18 +1288,21 @@ def openclaw(parse: bool) -> Found | None:
 # network without asking. A PASS therefore never depends on an unread agent.
 
 OTHER_AGENTS = [
-    ("copilot", "GitHub Copilot (agent mode / CLI)", [".copilot", ".config/github-copilot"], [], ["copilot"],
+    ("copilot", "GitHub Copilot (VS Code agent mode)", [".config/github-copilot"], [], [],
      ["github.copilot-chat", "github.copilot"]),
-    ("windsurf", "Windsurf", [".codeium/windsurf"], ["Windsurf.app"], ["windsurf"], ["codeium.windsurf"]),
-    ("gemini_cli", "Gemini CLI", [".gemini"], [], ["gemini"], ["google.geminicodeassist"]),
+    ("copilot_cli", "GitHub Copilot CLI", [".copilot"], [], ["copilot"], []),
+    ("windsurf", "Windsurf Cascade (legacy agent)", [".codeium/windsurf"], ["Windsurf.app"], ["windsurf"], ["codeium.windsurf"]),
+    ("gemini_cli", "Gemini CLI", [".gemini"], [], ["gemini"], []),
+    ("gemini_code_assist", "Gemini Code Assist (IDE)", [], [], [], ["google.geminicodeassist"]),
     ("aider", "Aider", [".aider.conf.yml"], [], ["aider"], []),
     ("continue", "Continue", [".continue"], [], ["cn"], ["continue.continue"]),
     ("cline", "Cline", [".cline"], [], ["cline"], ["saoudrizwan.claude-dev"]),
     ("roo", "Roo Code", [], [], [], ["rooveterinaryinc.roo-cline"]),
     ("kilo", "Kilo Code", [".kilocode"], [], ["kilocode"], ["kilocode.kilo-code"]),
     ("augment", "Augment", [".augment"], [], ["auggie"], ["augment.vscode-augment"]),
-    ("amazon_q", "Amazon Q / Kiro CLI", [".aws/amazonq"], [], ["q", "kiro-cli"], ["amazonwebservices.amazon-q-vscode"]),
-    ("kiro", "Kiro", [".kiro"], ["Kiro.app"], ["kiro"], []),
+    ("amazon_q", "Amazon Q Developer CLI", [".aws/amazonq"], [], ["q"], ["amazonwebservices.amazon-q-vscode"]),
+    ("kiro", "Kiro", [".kiro"], ["Kiro.app"], ["kiro", "kiro-cli"], []),
+    ("devin", "Devin Local / Devin CLI", [".config/devin"], ["Devin.app", "Devin Desktop.app"], ["devin"], []),
     ("zed", "Zed agent", [".config/zed"], ["Zed.app"], ["zed"], []),
     ("cursor_cli", "Cursor CLI", [], [], ["cursor-agent"], []),
     ("opencode", "OpenCode", [".config/opencode"], [], ["opencode"], []),
@@ -1148,6 +1362,552 @@ def worst_case(name: str, title: str, how: list[str], ctl: list[str]) -> Found:
     return f
 
 
+# --- settings readers for other agents ------------------------------------------
+# Each reader returns the agent's rights from its own settings and documented
+# defaults, or None to fall back to "unrestricted". A reader may only narrow an
+# agent below "unrestricted" for reasons it can read; anything it cannot read
+# (launch flags, per-project files it cannot find, UI-only toggles) is noted.
+
+PROJ = ["proj:*", "proj:instructions"]
+WEB = {"read": ["web"], "write": ["net"]}
+
+
+def parsed(name: str, title: str, how: list[str], ctl: list[str], read=(), write=(), ask=None,
+           notes=(), coverage: str = "read") -> Found:
+    f = Found(name, title, read=list(read), write=list(write), ask=dict(ask or {}),
+              control_paths=ctl, reads_project_instructions=True, uses_shell=True, coverage=coverage)
+    f.notes = ["found: " + "; ".join(how)] + list(notes)
+    return f
+
+
+def _open(f: Found, gate: str) -> None:
+    open_gate(f, gate)
+
+
+def mcp_gates(servers: dict) -> tuple[dict, list[str]]:
+    gates, notes = {}, []
+    for srv, spec in sorted((servers or {}).items()):
+        reach, desc = mcp_reach(srv, spec if isinstance(spec, dict) else {})
+        gates[f"mcp:{srv}"] = {"read": list(reach["read"]), "write": list(reach["write"])}
+        notes.append(f"MCP server {srv}: {desc}")
+    return gates, notes
+
+
+def parse_aider(how, ctl):
+    conf = {}
+    for p in [HOME / ".aider.conf.yml"]:
+        conf.update(load_config(p) or {})
+    env = lambda k: os.environ.get("AIDER_" + k.upper().replace("-", "_"))
+    val = lambda k, d: (env(k).lower() in ("1", "true", "yes")) if env(k) is not None else bool(conf.get(k, d))
+    f = parsed("aider", "Aider", how, ctl, read=PROJ, write=PROJ,
+               ask={"shell": dict(SHELL_ALL), "new_files": {"write": ["proj:*"]}, "web": dict(WEB)},
+               notes=["edits files in the chat without asking and commits them",
+                      "shell commands it suggests always ask, even with yes-always",
+                      "only ~/.aider.conf.yml is read; a .aider.conf.yml in a repo can change this"])
+    if val("yes-always", False):
+        _open(f, "new_files")
+        _open(f, "web")
+        f.notes.append("yes-always: new files and adding web pages run without asking")
+    if (val("auto-lint", True) and conf.get("lint-cmd")) or (val("auto-test", False) and conf.get("test-cmd")):
+        _open(f, "shell")
+        f.notes.append("runs your lint or test command after every edit, which runs code the agent just wrote")
+    return f
+
+
+def parse_continue(how, ctl, exts):
+    if "continue.continue" in exts:
+        return None   # the IDE's tool toggles live in webview storage this scan cannot read
+    perms = load_config(HOME / ".continue/permissions.yaml") or {}
+    cfg = load_config(HOME / ".continue/config.yaml") or {}
+    servers = {s.get("name", f"server{i}"): s for i, s in enumerate(cfg.get("mcpServers") or []) if isinstance(s, dict)}
+    mg, mn = mcp_gates(servers)
+    f = parsed("continue", "Continue CLI (cn)", how, ctl, read=["*", "web"], write=["net"],
+               ask={"edit": {"write": ["proj:*", "proj:instructions"]}, "shell": dict(SHELL_ALL), **mg},
+               notes=["reads files, searches and fetches the web without asking",
+                      "launch flags are not visible: --auto allows everything, and --readonly still allows shell and MCP"] + mn)
+    for pat in perms.get("allow") or []:
+        tool = str(pat).split("(", 1)[0].strip()
+        if tool in ("*",):
+            for g in list(f.ask):
+                _open(f, g)
+        elif tool in ("Bash", "Shell"):
+            _open(f, "shell")
+        elif tool in ("Edit", "MultiEdit", "Write"):
+            _open(f, "edit")
+        f.notes.append(f"allowed without asking: {pat}")
+    for pat in perms.get("exclude") or []:
+        tool = str(pat).split("(", 1)[0].strip()
+        if tool in ("Bash", "Shell") and "(" not in str(pat):
+            f.ask.pop("shell", None)
+        if tool in ("Edit", "MultiEdit", "Write") and "(" not in str(pat):
+            f.ask.pop("edit", None)
+    return f
+
+
+def _last_match(rules: dict, cmd: str):
+    """OpenCode pattern maps: the last matching pattern wins."""
+    out = None
+    for pat, act in rules.items():
+        if fnmatch.fnmatchcase(cmd, pat):
+            out = act
+    return out
+
+
+def parse_opencode(how, ctl):
+    cfg = {}
+    for p in (HOME / ".config/opencode/opencode.json", HOME / ".config/opencode/opencode.jsonc"):
+        if p.exists():
+            cfg = load_config(p) or {}
+    perm = dict(cfg.get("permission") or {})
+    try:
+        perm.update(json.loads(os.environ.get("OPENCODE_PERMISSION", "") or "{}"))
+    except ValueError:
+        pass
+    default = perm.get("*", "allow") if isinstance(perm.get("*", "allow"), str) else "allow"
+    get = lambda k: perm.get(k, default)
+    mg, mn = mcp_gates(cfg.get("mcp") or {})
+    f = parsed("opencode", "OpenCode", how, ctl, read=PROJ, write=[],
+               ask={"edit": {"write": list(PROJ)}, "shell": dict(SHELL_ALL), "web": dict(WEB),
+                    "outside": {"read": ["*"], "write": ["*"]}, **mg},
+               notes=["by default every tool runs without asking, except reaching outside the project",
+                      "a project opencode.json, managed config or a per-agent permission can change this; only the global file and OPENCODE_PERMISSION are read"] + mn)
+    plain = lambda v: v if isinstance(v, str) else None
+    for key, gate in (("edit", "edit"), ("webfetch", "web"), ("websearch", "web")):
+        if plain(get(key)) == "allow":
+            _open(f, gate)
+    bash = get("bash")
+    if plain(bash) == "allow" or (isinstance(bash, dict) and _last_match(bash, "anything") == "allow"):
+        _open(f, "shell")
+    elif isinstance(bash, dict):
+        for pat, act in bash.items():
+            if act == "allow" and pat.strip() not in ("*",):
+                rights, desc = shell_rights(pat)
+                f.read += rights["read"]
+                f.write += rights["write"]
+                f.notes.append(f"bash {pat!r} runs without asking: {desc}")
+    if plain(get("external_directory")) == "allow":
+        _open(f, "outside")
+    if default == "allow":
+        for g in [g for g in f.ask if g.startswith("mcp:")]:
+            _open(f, g)
+    f.notes.append("permission: " + ", ".join(f"{k}={v if isinstance(v, str) else 'patterns'}" for k, v in sorted(perm.items())) if perm else "permission: defaults (everything allowed)")
+    return f
+
+
+GOOSE_BUILTIN = {"developer": (SHELL_ALL, "shell and file editing"),
+                 "computercontroller": ({"read": ["web", "*"], "write": ["net", "*"]}, "web scraping and app automation"),
+                 "memory": ({"read": [], "write": []}, "notes it keeps for itself")}
+
+
+def parse_goose(how, ctl):
+    root = Path(os.environ.get("GOOSE_PATH_ROOT", str(HOME / ".config/goose")))
+    cfg = load_config(root / "config.yaml") or {}
+    mode = os.environ.get("GOOSE_MODE") or cfg.get("GOOSE_MODE") or "auto"
+    perms = ((load_config(root / "permission.yaml") or {}).get("user") or {})
+    gates, notes = {}, []
+    for ext, spec in sorted((cfg.get("extensions") or {}).items()):
+        spec = spec if isinstance(spec, dict) else {}
+        if spec.get("enabled") is False:
+            continue
+        if spec.get("type") == "builtin" or ext in GOOSE_BUILTIN:
+            reach, desc = GOOSE_BUILTIN.get(ext, (SHELL_ALL, "built-in extension"))
+        else:
+            reach, desc = mcp_reach(ext, {"command": spec.get("cmd", ""), "args": spec.get("args", []),
+                                          "url": spec.get("uri") or spec.get("url")})
+        gates[f"ext:{ext}"] = {"read": list(reach["read"]), "write": list(reach["write"])}
+        notes.append(f"extension {ext}: {desc}")
+    if not cfg.get("extensions"):
+        gates["ext:developer"] = dict(SHELL_ALL)
+        notes.append("extension developer (default): shell and file editing")
+    f = parsed("goose", "Goose", how, ctl, read=PROJ, write=[], ask=gates,
+               notes=[f"mode: {mode}"] + notes + ["the mode can also be changed mid-session with /mode"])
+    if mode == "chat":
+        f.ask.clear()
+        f.notes.append("chat mode: no tools")
+    elif mode in ("auto", "smart_approve"):
+        for g in list(f.ask):
+            _open(f, g)
+        f.notes.append("auto mode runs every tool without asking and ignores permission.yaml" if mode == "auto"
+                       else "smart_approve lets a model decide which calls need you; treated as no approval")
+    else:
+        for tool in perms.get("always_allow") or []:
+            g = "ext:" + str(tool).split("__", 1)[0]
+            if g in f.ask:
+                _open(f, g)
+                f.notes.append(f"always allowed: {tool}")
+    return f
+
+
+def _regex_prefix(rx: str) -> str | None:
+    """A Zed always_allow regex reduced to the command prefix it allows, if it has one."""
+    if not rx.startswith("^"):
+        return None
+    lit = re.match(r"[A-Za-z0-9_./ \-]+", rx[1:])
+    return lit.group(0).strip() if lit and lit.group(0).strip() else None
+
+
+def parse_zed(how, ctl):
+    import re as _re  # noqa: F401
+    s = load_config(HOME / ".config/zed/settings.json") or {}
+    agent = s.get("agent") or {}
+    mg, mn = mcp_gates(s.get("context_servers") or {})
+    f = parsed("zed", "Zed agent", how, ctl, read=["*"], write=[],
+               ask={"terminal": dict(SHELL_ALL), "edit": {"write": list(PROJ)}, "fetch": dict(WEB), **mg},
+               notes=["reads files without asking (assumed: any file it can open)",
+                      "terminal, edits, fetch and MCP tools ask by default",
+                      "only ~/.config/zed/settings.json is read; project .zed/settings.json is not"] + mn)
+    profile = agent.get("default_profile", "write")
+    if profile == "minimal":
+        f.ask.clear()
+        f.read = []
+    elif profile == "ask":
+        for g in [g for g in f.ask if g not in ("fetch",)]:
+            f.ask.pop(g)
+    tp = agent.get("tool_permissions") or {}
+    if agent.get("always_allow_tool_actions") or tp.get("default") == "allow":
+        for g in list(f.ask):
+            _open(f, g)
+        f.notes.append("tool actions run without asking")
+    tools = tp.get("tools") or {}
+    for tool, gate in (("terminal", "terminal"), ("edit_file", "edit"), ("write_file", "edit"), ("fetch", "fetch"),
+                       ("search_web", "fetch")):
+        t = tools.get(tool) or {}
+        if t.get("default") == "allow" and gate in f.ask:
+            _open(f, gate)
+        elif tool == "terminal" and gate in f.ask:
+            for rule in t.get("always_allow") or []:
+                rx = rule.get("pattern", "") if isinstance(rule, dict) else str(rule)
+                pre = _regex_prefix(rx)
+                rights, desc = shell_rights(pre) if pre else (SHELL_ALL, "pattern without a fixed start: any command")
+                f.read += rights["read"]
+                f.write += rights["write"]
+                f.notes.append(f"terminal {rx!r} runs without asking: {desc}")
+    f.notes.append(f"profile: {profile}")
+    return f
+
+
+def parse_devin(how, ctl):
+    """Devin Local / Devin CLI (Devin Desktop's default agent, formerly Windsurf)."""
+    layers = [load_config(HOME / ".config/devin/config.json") or {}]
+    allow, ask_r, deny = [], [], []
+    for d in layers:
+        p = d.get("permissions") or {}
+        allow += p.get("allow") or []
+        ask_r += p.get("ask") or []
+        deny += p.get("deny") or []
+    mcp = {}
+    for p in (HOME / ".config/devin/mcp_config.json", HOME / ".codeium/windsurf/mcp_config.json"):
+        mcp.update((load_config(p) or {}).get("mcpServers") or {})
+    mg, mn = mcp_gates(mcp)
+    mode = os.environ.get("DEVIN_PERMISSION_MODE", "normal").lower()
+    f = parsed("devin", "Devin Local / Devin CLI (Devin Desktop, formerly Windsurf)", how, ctl,
+               read=["*"], write=[],
+               ask={"exec": dict(SHELL_ALL), "edit": {"write": list(PROJ)}, "fetch": dict(WEB), **mg},
+               notes=["reads, grep and glob run without asking (assumed: any file)",
+                      "commands, web fetches and edits ask in normal mode",
+                      "project .devin/config.json and launch flags (--permission-mode) are not read"] + mn)
+    for rule in allow:
+        tool, arg = rule_arg(str(rule))
+        t = tool.lower()
+        if t == "exec":
+            if arg:
+                rights, desc = shell_rights(arg)
+                f.read += rights["read"]
+                f.write += rights["write"]
+                f.notes.append(f"{rule}: {desc}")
+            else:
+                _open(f, "exec")
+        elif t in ("write", "edit"):
+            f.write += path_places(arg, "proj:*") if arg else list(PROJ)
+        elif t == "fetch":
+            f.read.append("web")
+            f.write.append("net")
+        elif t.startswith("mcp__"):
+            srv = t[5:].split("__", 1)[0]
+            for g in [g for g in f.ask if g.startswith("mcp:") and (srv == "*" or g == f"mcp:{srv}")]:
+                _open(f, g)
+        f.notes.append(f"allowed without asking: {rule}")
+    if mode in ("bypass", "autonomous"):
+        for g in list(f.ask):
+            _open(f, g)
+        f.notes.append(f"{mode} mode: everything runs without asking")
+    elif mode in ("accept_edits", "acceptedits", "accept-edits"):
+        _open(f, "edit")
+    return f
+
+
+def parse_cline(how, ctl):
+    base = Path(os.environ.get("CLINE_DATA_DIR") or os.environ.get("CLINE_DIR", str(HOME / ".cline")) + "/data")
+    st = (load_config(base / "globalState.json") or {}).get("autoApprovalSettings") or {}
+    acts = {"readFiles": True, "editFiles": True, "executeSafeCommands": False, "useBrowser": True, "useMcp": True}
+    acts.update(st.get("actions") or {})
+    enabled = st.get("enabled", True)
+    mcp_path = Path(os.environ.get("CLINE_MCP_SETTINGS_PATH", str(base / "settings/cline_mcp_settings.json")))
+    servers = {k: v for k, v in ((load_config(mcp_path) or {}).get("mcpServers") or {}).items()
+               if not (isinstance(v, dict) and v.get("disabled"))}
+    mg, mn = mcp_gates(servers)
+    f = parsed("cline", "Cline", how, ctl, read=list(PROJ), write=[],
+               ask={"read": {"read": ["*"]}, "edit": {"write": ["*"]}, "shell": dict(SHELL_ALL),
+                    "browser": dict(WEB), **mg},
+               notes=["settings: " + ("~/.cline/data/globalState.json" if st else "Cline's defaults (no saved settings found)")] + mn)
+    if enabled:
+        for key, gates in (("readFiles", ["read"]), ("editFiles", ["edit"]), ("executeSafeCommands", ["shell"]),
+                           ("useBrowser", ["browser"]), ("useMcp", [g for g in f.ask if g.startswith("mcp:")])):
+            if acts.get(key):
+                for g in gates:
+                    _open(f, g)
+                f.notes.append(f"{key}: without asking")
+    if _which("cline"):
+        for g in list(f.ask):
+            _open(f, g)
+        f.notes.append("the cline command auto-approves everything unless run with --auto-approve false")
+    if os.environ.get("CLINE_COMMAND_PERMISSIONS"):
+        f.notes.append("CLINE_COMMAND_PERMISSIONS is set in this shell; it can only restrict commands")
+    return f
+
+
+def parse_kiro(how, ctl):
+    home = Path(os.environ.get("KIRO_HOME", str(HOME / ".kiro")))
+    ide = load_config(APP_SUPPORT / "Kiro/User/settings.json") or {}
+    autonomy = ide.get("kiroAgent.agentAutonomy", "Autopilot")
+    servers = {k: v for k, v in ((load_config(home / "settings/mcp.json") or {}).get("mcpServers") or {}).items()
+               if not (isinstance(v, dict) and v.get("disabled"))}
+    mg, mn = mcp_gates(servers)
+    f = parsed("kiro", "Kiro", how, ctl, read=list(PROJ), write=[],
+               ask={"fs_read": {"read": ["*"]}, "fs_write": {"write": ["*"]}, "shell": dict(SHELL_ALL),
+                    "web": dict(WEB), **mg},
+               notes=[f"IDE autonomy: {autonomy}"] + mn +
+                     ["workspace permission files and --trust-all-tools / --trust-tools flags are not read"])
+    for srv, spec in servers.items():
+        if isinstance(spec, dict) and spec.get("autoApprove"):
+            _open(f, f"mcp:{srv}")
+            f.notes.append(f"MCP server {srv}: auto-approved tools {spec['autoApprove']}")
+    cap_gate = {"fs_read": ["fs_read"], "fs_write": ["fs_write"], "shell": ["shell"], "web_fetch": ["web"],
+                "web_search": ["web"], "mcp": [g for g in f.ask if g.startswith("mcp:")], "all": list(f.ask)}
+    for rule in (load_config(home / "settings/permissions.yaml") or {}).get("rules") or []:
+        if not isinstance(rule, dict) or rule.get("effect") != "allow":
+            continue
+        cap = rule.get("capability")
+        if cap == "shell" and rule.get("match"):
+            for m in rule["match"]:
+                rights, desc = shell_rights(str(m))
+                f.read += rights["read"]
+                f.write += rights["write"]
+                f.notes.append(f"shell {m!r} allowed: {desc}")
+        else:
+            for g in cap_gate.get(cap, []):
+                if g in f.ask:
+                    _open(f, g)
+            f.notes.append(f"allowed: {cap} {rule.get('match') or ''}".strip())
+    if (APP_SUPPORT / "Kiro").exists() or (Path("/Applications/Kiro.app")).exists():
+        if str(autonomy).lower() != "supervised":
+            for g in ("fs_write", "shell"):
+                if g in f.ask:
+                    _open(f, g)
+            f.notes.append("Autopilot (the default) edits files and runs commands without asking")
+    return f
+
+
+def parse_amazon_q(how, ctl):
+    agents_dir = HOME / ".aws/amazonq/cli-agents"
+    agent = load_config(agents_dir / "default.json") or {}
+    allowed = agent.get("allowedTools", ["fs_read"]) if agent else ["fs_read"]
+    servers = (load_config(HOME / ".aws/amazonq/mcp.json") or {}).get("mcpServers") or {}
+    mg, mn = mcp_gates(servers)
+    f = parsed("amazon_q", "Amazon Q Developer CLI", how, ctl, read=[], write=[],
+               ask={"fs_read": {"read": ["*"]}, "fs_write": {"write": ["*"]}, "execute_bash": dict(SHELL_ALL),
+                    "use_aws": {"read": ["web"], "write": ["net"]}, **mg},
+               notes=["custom agents in ~/.aws/amazonq/cli-agents other than default.json, and /tools trust-all, are not read"] + mn)
+    for t in allowed:
+        t = str(t)
+        if t in ("*", "@builtin"):
+            for g in [g for g in f.ask if not g.startswith("mcp:")] if t == "@builtin" else list(f.ask):
+                _open(f, g)
+        elif t in f.ask:
+            _open(f, t)
+        elif t.startswith("@"):
+            srv = t[1:].split("/", 1)[0]
+            if f"mcp:{srv}" in f.ask:
+                _open(f, f"mcp:{srv}")
+        f.notes.append(f"trusted without asking: {t}")
+    bash = ((agent.get("toolsSettings") or {}).get("execute_bash") or {})
+    for rx in bash.get("allowedCommands") or []:
+        pre = _regex_prefix("^" + str(rx).replace("\\A", "").lstrip("^"))
+        rights, desc = shell_rights(pre) if pre else (SHELL_ALL, "pattern: any command")
+        f.read += rights["read"]
+        f.write += rights["write"]
+        f.notes.append(f"command {rx!r} trusted: {desc}")
+    return f
+
+
+VSCODE_USER = APP_SUPPORT / "Code/User"
+
+
+def _key_prefix(k: str) -> str | None:
+    """A VS Code terminal auto-approve key reduced to the command prefix it allows."""
+    if k.startswith("/"):
+        body = k[1:k.rfind("/")] if k.rfind("/") > 0 else k[1:]
+        return _regex_prefix(body if body.startswith("^") else "x" + body)  # unanchored regex: no prefix
+    return k.strip() or None
+
+
+def parse_copilot(how, ctl):
+    """GitHub Copilot agent mode in VS Code."""
+    s = load_config(VSCODE_USER / "settings.json") or {}
+    g = lambda k, d=None: s.get(k, d)
+    servers = (load_config(VSCODE_USER / "mcp.json") or {}).get("servers") or {}
+    mg, mn = mcp_gates(servers)
+    f = parsed("copilot", "GitHub Copilot (VS Code agent mode)", how, ctl,
+               read=list(PROJ), write=["proj:*", "proj:instructions"],
+               ask={"terminal": dict(SHELL_ALL), "fetch": dict(WEB), "read_outside": {"read": ["*"]},
+                    "sensitive_edits": {"write": ["ctl:*"]}, **mg},
+               notes=["edits workspace files without asking, except sensitive ones (.vscode, .mcp.json, agent settings)",
+                      "a repo's .vscode/settings.json can add terminal auto-approve rules; those are not read here",
+                      "'allow in this session/workspace' approvals live in VS Code storage and are not read"] + mn)
+    if g("chat.tools.terminal.enableAutoApprove", True):
+        if not g("chat.tools.terminal.ignoreDefaultAutoApproveRules", False):
+            f.read.append("*")                          # cat, head, grep, find, rg ... run without asking
+            f.notes.append("built-in rules run cat, grep, find, sed, git log and similar without asking: reads any file")
+        if g("chat.tools.terminal.autoApproveWorkspaceNpmScripts", True):
+            _open(f, "terminal")
+            f.notes.append("npm/yarn/pnpm run <script> runs without asking (default), and the agent can edit the files "
+                           "those scripts run: any code")
+        for k, v in (g("chat.tools.terminal.autoApprove") or {}).items():
+            ok = v is True or (isinstance(v, dict) and v.get("approve") is True)
+            if not ok or "terminal" not in f.ask:
+                continue
+            pre = _key_prefix(str(k))
+            rights, desc = shell_rights(pre) if pre else (SHELL_ALL, "pattern without a fixed start: any command")
+            f.read += rights["read"]
+            f.write += rights["write"]
+            f.notes.append(f"terminal {k!r} runs without asking: {desc}")
+    if any(v is True or (isinstance(v, dict) and v.get("approveRequest")) for v in (g("chat.tools.urls.autoApprove") or {}).values()):
+        f.read.append("web")
+        f.write.append("net")
+        f.notes.append("some URLs are fetched without asking")
+    glob_ = g("chat.tools.global.autoApprove")
+    if glob_ is True or g("chat.permissions.default") in ("autoApprove", "autopilot") or \
+            (g("chat.defaultConfiguration") or {}).get("approvals") == "allowAll":
+        for x in list(f.ask):
+            _open(f, x)
+        f.notes.append("approvals are bypassed: every tool runs without asking")
+    if str(g("chat.agent.sandbox.enabled", "off")).lower() in ("on", "true") and g("chat.agent.sandbox.mcpServers", True):
+        for x in [x for x in f.ask if x.startswith("mcp:")]:
+            _open(f, x)
+        f.notes.append("sandboxed MCP servers' tools run without asking")
+    return f
+
+
+def parse_copilot_cli(how, ctl):
+    home = Path(os.environ.get("COPILOT_HOME", str(HOME / ".copilot")))
+    s = load_config(home / "settings.json") or {}
+    servers = (load_config(home / "mcp-config.json") or {}).get("mcpServers") or {}
+    mg, mn = mcp_gates(servers)
+    f = parsed("copilot_cli", "GitHub Copilot CLI", how, ctl, read=list(PROJ), write=[],
+               ask={"write": {"write": list(PROJ)}, "shell": dict(SHELL_ALL), "url": dict(WEB),
+                    "outside": {"read": ["*"], "write": ["*"]}, **mg},
+               notes=["reads, search and read-only shell commands in the working folder run without asking",
+                      "launch flags (--allow-tool, --allow-all, --yolo) and saved approvals in permissions-config.json are not read"] + mn)
+    if s.get("allowedUrls"):
+        f.read.append("web")
+        f.write.append("net")
+        f.notes.append(f"URLs fetched without asking: {', '.join(map(str, s['allowedUrls']))[:120]}")
+    if s.get("defaultPermissionMode") == "allow-all" or os.environ.get("COPILOT_ALLOW_ALL"):
+        for x in list(f.ask):
+            _open(f, x)
+        f.notes.append("allow-all: every tool runs without asking")
+    return f
+
+
+def parse_gemini(how, ctl):
+    home = Path(os.environ.get("GEMINI_CLI_HOME", str(HOME / ".gemini")))
+    s = {}
+    for p in (Path("/Library/Application Support/GeminiCli/system-defaults.json"), home / "settings.json",
+              Path("/Library/Application Support/GeminiCli/settings.json")):
+        for k, v in (load_config(p) or {}).items():
+            s[k] = {**s[k], **v} if isinstance(v, dict) and isinstance(s.get(k), dict) else v
+    tools, mcp = s.get("tools") or {}, s.get("mcp") or {}
+    servers = s.get("mcpServers") or {}
+    mg, mn = mcp_gates(servers)
+    f = parsed("gemini_cli", "Gemini CLI", how, ctl, read=list(PROJ) + ["web"], write=["net"],
+               ask={"shell": dict(SHELL_ALL), "edit": {"write": list(PROJ)}, "web_fetch": dict(WEB), **mg},
+               notes=["reads workspace files and runs Google web searches without asking: it reads the web, and its queries leave the machine",
+                      "project .gemini/settings.json (trusted folders) and launch flags such as --yolo are not read"] + mn)
+    allow = list(tools.get("allowed") or []) + list(tools.get("core") or [])
+    for t in allow:
+        tool, arg = rule_arg(str(t))
+        if tool == "run_shell_command":
+            if arg:
+                rights, desc = shell_rights(arg)
+                f.read += rights["read"]
+                f.write += rights["write"]
+                f.notes.append(f"{t}: {desc}")
+            else:
+                _open(f, "shell")
+        elif tool in ("write_file", "replace", "edit"):
+            _open(f, "edit")
+        elif tool == "web_fetch":
+            _open(f, "web_fetch")
+        f.notes.append(f"allowed without asking: {t}")
+    if tools.get("core"):
+        named = {rule_arg(str(t))[0] for t in tools["core"]}
+        for x, tool in (("shell", "run_shell_command"), ("web_fetch", "web_fetch")):
+            if tool not in named:
+                f.ask.pop(x, None)
+        if "google_web_search" not in named:
+            f.read.remove("web")
+            f.write.remove("net")
+        f.notes.append("tools.core: only the listed tools exist")
+    allowed_srv = mcp.get("allowed") or []
+    for srv, spec in servers.items():
+        if "*" in allowed_srv or srv in allowed_srv or (isinstance(spec, dict) and spec.get("trust")):
+            _open(f, f"mcp:{srv}")
+            f.notes.append(f"MCP server {srv}: trusted, its tools run without asking")
+    if (s.get("general") or {}).get("defaultApprovalMode") == "auto_edit":
+        _open(f, "edit")
+        _open(f, "web_fetch")
+        f.notes.append("auto_edit: edits and web fetches run without asking")
+    pol_dir = home / "policies"
+    pols = sorted(pol_dir.glob("*.toml")) if pol_dir.is_dir() else []
+    if pols:
+        if tomllib is None:
+            raise RuntimeError("policy files need Python 3.11+ to read")
+        for p in pols:
+            with open(p, "rb") as fh:
+                for rule in tomllib.load(fh).get("rule") or []:
+                    if rule.get("decision") != "allow":
+                        continue
+                    name = rule.get("toolName") or ""
+                    if rule.get("mcpName"):
+                        g = f"mcp:{rule['mcpName']}"
+                        if g in f.ask:
+                            _open(f, g)
+                    elif name == "run_shell_command":
+                        pre = rule.get("commandPrefix")
+                        pres = pre if isinstance(pre, list) else [pre] if pre else []
+                        if not pres:
+                            _open(f, "shell")
+                        for x in pres:
+                            rights, desc = shell_rights(str(x))
+                            f.read += rights["read"]
+                            f.write += rights["write"]
+                    elif name in ("write_file", "replace"):
+                        _open(f, "edit")
+                    elif name == "web_fetch":
+                        _open(f, "web_fetch")
+                    elif name == "*" or not name:
+                        for x in list(f.ask):
+                            _open(f, x)
+                    f.notes.append(f"policy {p.name}: allows {name or rule.get('mcpName')}")
+    return f
+
+
+PARSERS = {"aider": parse_aider, "continue": parse_continue, "opencode": parse_opencode, "goose": parse_goose,
+           "zed": parse_zed, "devin": parse_devin, "cline": parse_cline, "kiro": parse_kiro,
+           "amazon_q": parse_amazon_q, "copilot": parse_copilot, "copilot_cli": parse_copilot_cli,
+           "gemini_cli": parse_gemini}
+
+
 def other_agents() -> list[Found]:
     exts = _extensions()
     apps = lambda a: (Path("/Applications") / a).exists() or (HOME / "Applications" / a).exists()
@@ -1166,7 +1926,16 @@ def other_agents() -> list[Found]:
                                    for n in os.listdir(x / "plugins")) for x in jb.iterdir() if x.is_dir()):
                 how.append("JetBrains AI plugin")
         if how:
-            found.append(worst_case(key, title, how, [f"~/{p}" for p in paths]))
+            ctl = [f"~/{p}" for p in paths]
+            f = None
+            if key in PARSERS:
+                try:
+                    fn = PARSERS[key]
+                    f = fn(how, ctl, exts) if fn is parse_continue else fn(how, ctl)
+                except Exception as e:   # a reader that fails never narrows the agent
+                    f = None
+                    how = how + [f"settings reader failed ({type(e).__name__})"]
+            found.append(f or worst_case(key, title, how, ctl))
     for e, editor in sorted(exts.items()):
         if e in claimed or not any(w in e for w in AI_WORDS):
             continue

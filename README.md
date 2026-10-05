@@ -18,7 +18,7 @@ curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | py
 
 **2. Paste the results into [the Sherlock page](https://sherlocksec.org).** It checks them in your browser and uploads nothing.
 
-[`scan.py`](scan.py) is a 742-line Python script with no dependencies. Read it before you run it. It finds every AI agent it can on your Mac (Claude Code per project with every approval you saved, MCP servers, Codex, Cursor, Claude desktop, Copilot, Windsurf, Gemini CLI, Aider, Cline and 20 more). Any agent whose settings it cannot read is modeled as unrestricted, so a PASS never depends on it, and each scan reports its coverage, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
+[`scan.py`](scan.py) is a 1511-line Python script with no dependencies. Read it before you run it. It finds every AI agent it can on your Mac and reads the approval settings of 15 of them: Claude Code (per project, with every approval you saved), Codex, GitHub Copilot in VS Code and its CLI, Gemini CLI, Cline, Aider, Continue, OpenCode, Goose, Zed, Kiro, Amazon Q, Devin and their MCP servers. Any agent whose settings it cannot read is modeled as unrestricted, so a PASS never depends on it, and each scan reports its coverage, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
 
 ![Results for a real developer Mac](docs/results.jpg)
 
