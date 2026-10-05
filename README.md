@@ -1,7 +1,49 @@
 # Sherlock
 
-Website for Sherlock: find what the AI agents on your laptop can do together.
+**Each AI agent passed review. Together, they leaked the key.**
 
-- `index.html`: the site. The checker runs in the visitor's browser; nothing is uploaded.
-- `scan.py`: the scanner visitors run on their Mac. Built from `agentwatch` by
-  `tools/build_web_scanner.py` in the research repo; copy it here after rebuilding.
+Engineers now run Claude Code, Codex, Cursor and more on one laptop, all sharing the same files. Each agent's permissions look safe on their own. Sherlock finds what the agents can do *as a group*: the cheapest attack, step by step, or a proof that none exists.
+
+### [→ Try it: scan your Mac in 60 seconds](https://claude.ai/artifact/4hAve6x4wLPUj68ZnP58gE)
+
+![Sherlock: an attack path through three agents](docs/hero.jpg)
+
+## Scan your Mac
+
+**1. Run this in Terminal.** It copies the results to your clipboard.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/scan.py | python3 - | pbcopy && echo 'Copied. Paste it into the Sherlock page.'
+```
+
+**2. Paste the results into [the Sherlock page](https://claude.ai/artifact/4hAve6x4wLPUj68ZnP58gE).** It checks them in your browser and uploads nothing.
+
+[`scan.py`](scan.py) is a 393-line Python script with no dependencies. Read it before you run it. It reads the permission settings of Claude Code, Codex, Cursor, Claude desktop and OpenClaw, and checks whether folders like `~/.ssh` exist. It never opens a secret and sends nothing anywhere.
+
+![Results for a real developer Mac](docs/results.jpg)
+
+## The attack in the picture
+
+| Agent | On its own |
+|---|---|
+| Cursor | Reads the web, but holds no keys and can't send anything out |
+| Codex | Can read `~/.ssh`, but has no internet |
+| Claude Code | Can reach the internet, but can't read keys |
+
+A web page hides instructions. Cursor reads the page and writes them into `AGENTS.md`. Codex and Claude Code both obey that file. Codex copies the SSH key into the project, and Claude Code sends it out. The attacker hacks no agent, and you approve no prompt.
+
+## How it works
+
+1. **Rules.** You write rules like `never ssh -> internet`. Each rule has a budget: the number of hacked agents and Allow clicks it must survive.
+2. **Rights.** The scanner reads every agent's permissions.
+3. **Solve.** The rules and rights compile to one SAT problem. A solution is a concrete attack. If there is no solution, the solver produces a proof that a separate checker verifies.
+
+**On a real developer Mac:**
+
+- With the agents as installed, 0 of 9 rules held.
+- After locking down each agent on its own, still 0 of 9 held.
+- After hardening the agents together, 9 of 9 held, each with a verified proof.
+
+## About
+
+Sherlock is a research prototype by Ning Luo, University of Illinois Urbana-Champaign. A failing rule means an attack is *possible* with these permissions. It does not mean an agent will fall for it.
