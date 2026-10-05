@@ -2466,6 +2466,7 @@ function stop() {
   $('lg-play').textContent = scene >= SCENES.length - 1 ? '↻ Replay walkthrough' : '▶ Resume walkthrough';
 }
 function play() {
+  played = true;
   if (timer) { stop(); return; }
   if (scene >= SCENES.length - 1) scene = 0;
   $('lg-play').textContent = '❚❚ Pause';
@@ -2479,7 +2480,9 @@ $('lg-play').addEventListener('click', play);
 render();
 // play once when the demo first scrolls into view, unless the visitor prefers less motion
 if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting) && !played) { played = true; play(); io.disconnect(); } }, { threshold: 0.5 });
+  const io = new IntersectionObserver(es => {
+    if (es.some(e => e.isIntersecting) && !played) { played = true; io.disconnect(); if (!timer && scene === 0) play(); }
+  }, { threshold: 0.5 });
   io.observe($('lg-svg'));
 }
 })();
