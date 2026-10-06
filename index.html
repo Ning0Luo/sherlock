@@ -2143,9 +2143,9 @@ const Engine = (() => {
   }
   function analyze(m, C, G, agentic, sources) {
     const R = m.agents.map(a => new Set(a.r)), W = m.agents.map(a => new Set(a.w));
-    m.gates.forEach((g, j) => { if (G >> j & 1) { g.r.forEach(x => R[g.agent].add(x)); g.w.forEach(x => W[g.agent].add(x)); } });
+    m.gates.forEach((g, j) => { if (G.has(j)) { g.r.forEach(x => R[g.agent].add(x)); g.w.forEach(x => W[g.agent].add(x)); } });
     const cor = new Map();
-    m.agents.forEach((a, i) => { if ((C >> i & 1) && !a.trusted) cor.set(i, { why: 'hack' }); });
+    m.agents.forEach((a, i) => { if (C.has(i) && !a.trusted) cor.set(i, { why: 'hack' }); });
     const taint = new Map();
     m.resNames.forEach(r => { if (m.res[r].untrusted && (!sources || sources.has(r))) taint.set(r, { why: 'source' }); });
     const lab = {};
@@ -2179,30 +2179,55 @@ const Engine = (() => {
     else if (p.kind === 'learn') { const i = m.idx[p.agent]; for (const r of [...res.R[i]].sort()) if (res.lab[r].has(p.label)) return r; }
     return null;
   }
-  const pop = x => { let c = 0; while (x) { c += x & 1; x = Math.floor(x / 2); } return c; };
-  /* Pareto frontier of (agents hacked, approvals) for every policy, exhaustive. */
-  function search(m, agentic) {
+  /* All k-element subsets of arr, generated lazily in lexicographic order. */
+  function* subsets(arr, k) {
+    if (k > arr.length) return;
+    const idx = Array.from({ length: k }, (_, i) => i);
+    while (true) {
+      yield idx.map(i => arr[i]);
+      let i = k - 1;
+      while (i >= 0 && idx[i] === arr.length - k + i) i--;
+      if (i < 0) return;
+      idx[i]++;
+      for (let j = i + 1; j < k; j++) idx[j] = idx[j - 1] + 1;
+    }
+  }
+  /* Pareto frontier of (agents hacked, approvals) for every policy, by
+     exhaustive search in order of total cost, within a work limit. complete
+     means every combination was tried; otherwise every combination of total
+     cost <= searched was. */
+  function search(m, agentic, limit = { checks: 150000, ms: 4000 }) {
     const hackable = m.agents.map((a, i) => a.trusted ? -1 : i).filter(i => i >= 0);
-    const n = hackable.length, g = m.gates.length, bits = n + g;
-    const cap = bits <= 16 ? bits : 5;
-    const pairs = [];
-    for (let c = 0; c < (1 << n); c++) { const t = pop(c); if (t > cap) continue;
-      let C = 0; hackable.forEach((ai, j) => { if (c >> j & 1) C |= 1 << ai; });
-      for (let G = 0; G < (1 << g); G++) { const h = pop(G); if (t + h <= cap) pairs.push([C, G, t, h]); } }
-    pairs.sort((a, b) => (a[2] + a[3]) - (b[2] + b[3]) || a[2] - b[2]);
+    const gateIdx = m.gates.map((_, j) => j);
+    const n = hackable.length, g = gateIdx.length;
     const front = m.policies.map(() => []);
-    for (const [C, G, t, h] of pairs) {
-      const todo = m.policies.map((_, k) => !front[k].some(p => p.t <= t && p.h <= h));
-      if (!todo.some(Boolean)) continue;
-      const cache = {};                       // one spread per attacker definition
-      m.policies.forEach((p, k) => {
-        if (!todo[k]) return;
-        const res = cache[p.srcKey] || (cache[p.srcKey] = analyze(m, C, G, agentic, p.src));
-        const tg = violated(m, p, res); if (tg) front[k].push({ t, h, C, G, res, target: tg });
-      });
+    const t0 = Date.now();
+    let checks = 0, searched = -1, stopped = false;
+    for (let k = 0; k <= n + g && !stopped; k++) {
+      for (let t = 0; t <= Math.min(k, n) && !stopped; t++) {
+        const h = k - t;
+        if (h > g) continue;
+        if (m.policies.every((_, q) => front[q].some(p => p.t <= t && p.h <= h))) continue;
+        for (const cs of subsets(hackable, t)) {
+          if (stopped) break;
+          for (const gs of subsets(gateIdx, h)) {
+            if (++checks > limit.checks || (checks % 512 === 0 && Date.now() - t0 > limit.ms)) { stopped = true; break; }
+            const todo = m.policies.map((_, q) => !front[q].some(p => p.t <= t && p.h <= h));
+            if (!todo.some(Boolean)) break;
+            const C = new Set(cs), G = new Set(gs), cache = {};
+            m.policies.forEach((p, q) => {
+              if (!todo[q]) return;
+              const res = cache[p.srcKey] || (cache[p.srcKey] = analyze(m, C, G, agentic, p.src));
+              const tg = violated(m, p, res); if (tg) front[q].push({ t, h, C, G, res, target: tg });
+            });
+          }
+        }
+      }
+      if (!stopped) searched = k;
+      if (m.policies.every((_, q) => front[q].some(p => p.t === 0 && p.h === 0))) { searched = n + g; break; }
     }
     front.forEach(f => f.sort((a, b) => a.t - b.t || a.h - b.h));
-    return { front, complete: cap === bits };
+    return { front, complete: searched >= n + g, searched, checks };
   }
 
   /* Certificate for a rule that holds: one inductive invariant (the least
@@ -2214,10 +2239,12 @@ const Engine = (() => {
     const combos = (N, K) => { const out = []; const rec = (s, acc) => { if (acc.length === K) { out.push(acc.slice()); return; } for (let i = s; i < N; i++) { acc.push(i); rec(i + 1, acc); acc.pop(); } }; rec(0, []); return out; };
     const p = m.policies[k];
     const { targets, src, srcKey, ...rule } = p;
+    const choose = (a, b) => { let r = 1; for (let i = 0; i < b; i++) r = r * (a - i) / (i + 1); return Math.round(r); };
+    if (choose(n, tt) * choose(g, hh) > 20000) return { tooLarge: true, cases: choose(n, tt) * choose(g, hh) };
     const invariants = [];
     for (const cs0 of combos(n, tt)) for (const gs of combos(g, hh)) {
       const cs = cs0.map(j => hackable[j]);
-      const C = cs.reduce((x, i) => x | (1 << i), 0), G = gs.reduce((x, j) => x | (1 << j), 0);
+      const C = new Set(cs), G = new Set(gs);
       const res = analyze(m, C, G, true, p.src);
       if (violated(m, p, res)) return null;
       const labels = {};
@@ -2275,7 +2302,7 @@ function policyName(p) {
 function steps(p, pt) {
   const out = [], seenA = new Set(), seenR = new Set(), res = pt.res;
   const gname = n => GATES[n] || (n.startsWith('mcp:') ? `use the ${n.slice(4)} MCP server` : n);
-  model.gates.forEach((g, j) => { if (pt.G >> j & 1) out.push(`You click Allow when ${title(g.agent)} asks to ${gname(g.name)}.`); });
+  model.gates.forEach((g, j) => { if (pt.G.has(j)) out.push(`You click Allow when ${title(g.agent)} asks to ${gname(g.name)}.`); });
   const agent = i => {
     if (seenA.has(i)) return; seenA.add(i);
     const w = res.cor.get(i);
@@ -2311,15 +2338,17 @@ function check(d, isSample) {
   model = Engine.load(d); raw = d; certs = {};
   if (!model.agents.length) throw new Error('The scan found no AI agents on this machine.');
   const r = Engine.search(model, true);
-  results = { ...r, isSample };
+  results = { ...r, isSample };   // front, complete, searched, checks
   open = new Set();
   render();
 }
 function render() {
-  const { front, complete, isSample } = results;
-  const verdicts = model.policies.map((p, k) => ({ p, k, pts: front[k], hit: front[k].find(x => x.t <= budget.t && x.h <= budget.h) }));
+  const { front, complete, searched, isSample } = results;
+  const covered = complete || searched >= budget.t + budget.h;
+  const verdicts = model.policies.map((p, k) => ({ p, k, pts: front[k], hit: front[k].find(x => x.t <= budget.t && x.h <= budget.h) }))
+    .map(v => ({ ...v, unknown: !v.hit && !covered }));
   if (!open.size) { const f = verdicts.find(v => v.hit); if (f) open.add(f.k); }
-  const held = verdicts.filter(v => !v.hit).length;
+  const held = verdicts.filter(v => !v.hit && !v.unknown).length;
   const secrets = new Set(model.resNames.flatMap(r => model.res[r].labels));
   const opt = (f, v) => [0, 1, 2, 3].map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('');
   let h = `<div class="scan-head"><div style="display:flex;flex-direction:column;gap:0.4rem">
@@ -2328,13 +2357,13 @@ function render() {
       <p class="muted">${model.agents.length} agents found: ${model.agents.map(a => esc(a.title)).join(', ')}. Secrets present: ${[...secrets].map(ln).join(', ') || 'none found'}.</p>${coverageHtml()}</div>
     <div class="budget" style="font-size:0.95rem">Must survive <select id="b-t" aria-label="Hacked agents to tolerate">${opt('t', budget.t)}</select> hacked agents and <select id="b-h" aria-label="Approvals to tolerate">${opt('h', budget.h)}</select> approvals</div></div>`;
   h += '<div class="rules">' + verdicts.map(v => {
-    const cheap = v.pts.length ? 'cheapest attack: ' + v.pts.map(x => `(${cost(x.t, x.h)})`).join(' or ') : (complete ? 'no attack at any cost' : 'no attack within 5 hacked agents and approvals combined');
+    const cheap = v.pts.length ? 'cheapest attack: ' + v.pts.map(x => `(${cost(x.t, x.h)})`).join(' or ') : (complete ? 'no attack at any cost' : `no attack costing ${searched} or less (hacked agents + approvals); this setup is too large to search further in a browser`);
     const shown = open.has(v.k) && (v.hit || v.pts[0]);
     const pt = v.hit || v.pts[0];
     return `<div class="rule" role="button" tabindex="0" data-open="${v.k}" aria-expanded="${!!shown}">
-      <div class="rule-top"><h3>${esc(policyName(v.p))}</h3><span class="pill ${v.hit ? 'fail' : 'pass'}">${v.hit ? 'FAIL' : 'PASS · CERTIFIED'}</span></div>
+      <div class="rule-top"><h3>${esc(policyName(v.p))}</h3><span class="pill ${v.hit ? 'fail' : 'pass'}">${v.hit ? 'FAIL' : v.unknown ? 'NOT FULLY CHECKED' : 'PASS · CERTIFIED'}</span></div>
       <div class="cost">${cheap}</div>
-      ${v.hit ? '' : certRow(v.k)}
+      ${v.hit ? '' : v.unknown ? '<p class="muted" style="font-size:0.85rem">The browser stopped before covering your budget. The command-line tool checks it fully with a SAT solver.</p>' : certRow(v.k)}
       ${shown ? `${v.hit ? '' : '<p class="muted" style="font-size:0.9rem">Holds within your budget. The cheapest attack outside it:</p>'}<ol class="steps">${steps(v.p, pt).map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : (pt ? '<p class="muted" style="font-size:0.85rem">Show the attack</p>' : '')}
     </div>`;
   }).join('') + '</div>';
@@ -2361,6 +2390,7 @@ function certRow(k) {
   const st = certs[k];
   let h = `<div class="cert-row"><button type="button" class="btn sm cert-btn" data-cert="${k}"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 12.5 5 18l5-2 5 2-1.5-5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Get certificate</button>`;
   if (!st) return h + '<span class="cert-note">Check it yourself in 10 seconds</span></div>';
+  if (st.tooLarge) return h + `<span class="cert-note">Too large for a browser certificate (${st.cases.toLocaleString()} worst cases). The command-line tool writes a SAT proof instead.</span></div>`;
   h += `<span class="cert-note">${st.copied ? 'Copied to your clipboard' : 'Select the certificate below and copy it'}${st.saved ? ' and downloaded' : ''} · ${st.cases} worst case${st.cases === 1 ? '' : 's'}</span></div>`;
   h += `<div class="cert-how"><p>Check it without trusting Sherlock. In Terminal:</p><pre>pbpaste | python3 &lt;(curl -fsSL https://raw.githubusercontent.com/Ning0Luo/sherlock/main/verify.py)</pre><p>Expected: <span class="mono" style="color:var(--accent)">VALID</span>. Change one fact in the certificate and it prints <span class="mono" style="color:var(--attack)">INVALID</span>.</p>${st.copied ? '' : `<textarea readonly rows="4" class="cert-text">${esc(st.text)}</textarea>`}</div>`;
   return h;
@@ -2368,6 +2398,7 @@ function certRow(k) {
 function getCert(k) {
   const c = Engine.certificate(raw, model, k, budget.t, budget.h);
   if (!c) return;
+  if (c.tooLarge) { certs[k] = { text: '', cases: c.cases, copied: false, saved: false, tooLarge: true }; open.add(k); render(); return; }
   const text = JSON.stringify(c, null, 1);
   const st = { text, cases: c.invariants.length, copied: false, saved: false };
   certs[k] = st; open.add(k);
@@ -2464,7 +2495,7 @@ function path(m, p, pt) {      // the attack as steps, plus which diagram nodes 
   const NAME = { account: 'account agent', auth: 'login step' }, T = i => NAME[m.agents[i].id] || m.agents[i].id;
   const where = r => r === 'web' ? 'a web page' : r === 'state:messages' ? 'the customer message' : r.replace('state:', '');
   const mark = r => NODE_OF[r] && hit.add(NODE_OF[r]);
-  m.gates.forEach((g, j) => { if (pt.G >> j & 1) { steps.push(`You click Allow on the ${T(g.agent)}'s ${g.name.replace('tool:', '')}.`); hit.add('email'); } });
+  m.gates.forEach((g, j) => { if (pt.G.has(j)) { steps.push(`You click Allow on the ${T(g.agent)}'s ${g.name.replace('tool:', '')}.`); hit.add('email'); } });
   const agent = i => { if (seenA.has(i)) return; seenA.add(i); hit.add(m.agents[i].id); const w = res.cor.get(i);
     if (w.why === 'hack') steps.push(`The attacker breaks into the ${T(i)}.`);
     else { taint(w.res); steps.push(`The ${T(i)} reads ${where(w.res)} and follows the attacker's text.`); } };
