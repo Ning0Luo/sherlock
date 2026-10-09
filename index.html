@@ -8,28 +8,35 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20aria-hidden%3D%22true%22%3E%3Cline%20x1%3D%2220.6%22%20y1%3D%2220.6%22%20x2%3D%2228.5%22%20y2%3D%2228.5%22%20stroke%3D%22%23D8B068%22%20stroke-width%3D%223.6%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2213%22%20cy%3D%2213%22%20r%3D%2210.2%22%20fill%3D%22none%22%20stroke%3D%22%23D8B068%22%20stroke-width%3D%222.4%22/%3E%3Cline%20x1%3D%228%22%20y1%3D%2210.5%22%20x2%3D%2217.5%22%20y2%3D%228.5%22%20stroke%3D%22%23F2E7D3%22%20stroke-width%3D%221.4%22%20opacity%3D%220.7%22/%3E%3Cline%20x1%3D%228%22%20y1%3D%2210.5%22%20x2%3D%2212.5%22%20y2%3D%2218%22%20stroke%3D%22%23F2E7D3%22%20stroke-width%3D%221.4%22%20opacity%3D%220.7%22/%3E%3Cline%20x1%3D%2217.5%22%20y1%3D%228.5%22%20x2%3D%2212.5%22%20y2%3D%2218%22%20stroke%3D%22%23E2573B%22%20stroke-width%3D%222%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%2210.5%22%20r%3D%222%22%20fill%3D%22%23F2E7D3%22/%3E%3Ccircle%20cx%3D%2217.5%22%20cy%3D%228.5%22%20r%3D%222.2%22%20fill%3D%22%23E2573B%22/%3E%3Ccircle%20cx%3D%2212.5%22%20cy%3D%2218%22%20r%3D%222.2%22%20fill%3D%22%23E2573B%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caveat:wght@500;600&display=swap">
 <style>
 /* Layout: a dark security console. One wide stage; the hero pairs a headline
    with a live attack graph. Orange is always the attacker's path; indigo is
    always a proof or a passing rule. Single deliberate dark theme. */
 :root {
-  --bg: #0C0906; --bg2: #120D09; --panel: #19130D; --panel2: #211910; --line: #2F2519; --line2: #47382A;
-  --ink: #F2E7D3; --muted: #B5A48A; --dim: #7E6E57;
-  --accent: #D8B068; --accent-dim: rgba(216,176,104,0.12);
-  --attack: #E2573B; --attack-dim: rgba(226,87,59,0.13); --attack-glow: rgba(226,87,59,0.38);
-  --display: "Cormorant Garamond", Garamond, "Times New Roman", serif;
-  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
-  --mono: "IBM Plex Mono", Menlo, Consolas, monospace;
-  --wide: 78rem; color-scheme: dark;
+  --bg: #fbf8f3; --bg2: #f2ece2; --panel: #ffffff; --panel2: #f7f1e8; --line: #ddd5c7; --line2: #cfc6b4;
+  --ink: #1a1814; --muted: #6b665d; --dim: #8d877c;
+  --accent: #1f3a93; --accent-dim: rgba(31,58,147,0.10);
+  --attack: #c4572e; --attack-dim: rgba(196,87,46,0.12); --attack-glow: rgba(196,87,46,0.30);
+  --ochre: #e0a93b; --rose: #e6a39b; --nav: rgba(251,248,243,0.82);
+  --display: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif;
+  --body: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --hand: Caveat, "Bradley Hand", cursive;
+  --wide: 78rem; color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#0f0e0c; --bg2:#181613; --panel:#1d1b18; --panel2:#232019; --line:#34302a; --line2:#45403a;
+    --ink:#f4ede1; --muted:#b0a99c; --dim:#8d877c;
+    --accent:#8fa8f0; --accent-dim:rgba(143,168,240,0.12);
+    --attack:#e0774f; --attack-dim:rgba(224,119,79,0.14); --attack-glow:rgba(224,119,79,0.30);
+    --nav:rgba(15,14,12,0.82); color-scheme: dark;
+  }
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 1.04rem; line-height: 1.6; padding-inline: 1rem; padding-block: 0 3rem;
-  background-image:
-    radial-gradient(60rem 36rem at 85% -10%, rgba(216,176,104,0.10), transparent 60%),
-    radial-gradient(40rem 30rem at 0% 30%, rgba(226,87,59,0.07), transparent 60%);
-  background-repeat: no-repeat; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 1.04rem; line-height: 1.6; padding-inline: 1rem; padding-block: 0 3rem; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 h1, h2, h3 { margin: 0; line-height: 1.08; text-wrap: balance; }
 h1, h2 { font-family: var(--display); letter-spacing: -0.03em; }
 h3 { font-family: var(--body); font-weight: 600; }
@@ -325,16 +332,69 @@ h1, h2, .stat b, .big, .scan-head h3 { font-variant-numeric: lining-nums; }
 .tk-q .ans-s { color: var(--attack); font-weight: 600; } .tk-q .ans-u { color: var(--accent); font-weight: 600; }
 .tk-q div.hidden { display: none; }
 @media (max-width: 960px) { .demo-grid { grid-template-columns: minmax(0, 1fr); } .tech { position: static; } }
+
+/* ===== Luna Lab restyle: light & warm, Inter + Caveat, cobalt + terra ===== */
+a { color: var(--accent); }
+.kicker, .eyebrow { color: var(--attack); }
+nav { background: var(--nav); border-bottom: 1px solid color-mix(in srgb, var(--line) 65%, transparent); }
+.hero h1 .hot { text-shadow: none; }
+.btn { border-radius: 980px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(20,18,16,0.05); }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: none; }
+.btn.primary:hover { background: #28479f; box-shadow: 0 10px 22px -10px var(--accent); transform: translateY(-1px); }
+.os-card, .demo-card, aside.tech, .tech, .graph, figure.graph, #r2-svg, #lg-svg, .r2-verdict, pre, .code, .tk-code, .search { border-radius: 18px; }
+.os-card, .demo-card, .tech, aside.tech { background: var(--panel); border-color: var(--line); box-shadow: 0 1px 3px rgba(20,18,16,0.06); }
+.hand { font-family: var(--hand); }
+.lg-sub { background: var(--panel2); color: var(--ink); border-left-color: var(--accent); }
+code, .mono { color: inherit; }
 </style>
 
 
 <style>body{margin:0}</style>
+<style>
+/* Rule-of-Two toy (replaces the LangGraph walkthrough). Palette unchanged:
+   orange is always the attacker's path, gold a fix or a proof. */
+#r2 .r2-legend { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.9rem; }
+.r2-chip { font-family:var(--mono); font-size:0.76rem; padding:0.3rem 0.6rem; border-radius:0.5rem; border:1px solid var(--line2); color:var(--muted); }
+.r2-chip b { color:var(--ink); margin-right:0.25rem; }
+#r2-svg { width:100%; height:auto; display:block; background:var(--bg2); border:1px solid var(--line); border-radius:0.6rem; }
+#r2-svg text { font-family:var(--body); font-size:12px; fill:var(--ink); }
+#r2-svg .sub { font-family:var(--mono); font-size:9px; fill:var(--dim); letter-spacing:0.05em; }
+#r2-svg .pip { font-family:var(--mono); font-size:11px; font-weight:700; fill:var(--line2); letter-spacing:0.22em; }
+#r2-svg .pip .has { fill:var(--ink); }
+#r2-svg .nd rect { fill:var(--panel2); stroke:var(--line2); stroke-width:1.2; transition:opacity .3s; }
+#r2-svg .nd.off { opacity:0.18; }
+#r2-svg .nd.lit rect { fill:var(--attack-dim); stroke:var(--attack); stroke-width:2; }
+#r2-svg .nd.src rect { stroke:var(--attack); stroke-dasharray:4 3; }
+#r2-svg .nd.sec rect { stroke:var(--accent); }
+#r2-svg .nd.gate rect { stroke:var(--accent); stroke-dasharray:6 4; }
+#r2-svg .ed { fill:none; stroke:var(--line2); stroke-width:1.5; transition:opacity .3s; }
+#r2-svg .ed.off { opacity:0.1; }
+#r2-svg .ed.lit { stroke:var(--attack); stroke-width:2.8; }
+#r2-svg .ed.gate { stroke:var(--accent); stroke-width:2; stroke-dasharray:6 4; }
+#r2-svg marker path { fill:var(--attack); }
+#r2 .r2-tally { display:flex; gap:0.5rem; align-items:center; margin:0.8rem 0 0.1rem; font-family:var(--mono); font-size:0.78rem; color:var(--dim); min-height:1.5rem; flex-wrap:wrap; }
+#r2 .r2-tally .lab { color:var(--dim); }
+#r2 .r2-tally .t { padding:0.22rem 0.55rem; border-radius:0.4rem; border:1px solid var(--line2); opacity:0.35; transition:opacity .35s, color .35s, border-color .35s; }
+#r2 .r2-tally .t.on { opacity:1; color:var(--ink); border-color:var(--attack); background:var(--attack-dim); }
+#r2 .r2-verdict { margin-top:0.85rem; padding:0.85rem 1.05rem; border-radius:0.6rem; border:1px solid var(--line2); background:var(--panel); font-size:0.95rem; line-height:1.5; }
+#r2 .r2-verdict:empty { display:none; }
+#r2 .r2-verdict.fail { border-color:var(--attack); background:var(--attack-dim); }
+#r2 .r2-verdict.safe { border-color:var(--accent); background:var(--accent-dim); }
+#r2 .r2-verdict b { color:var(--ink); }
+.r2-agents { display:flex; flex-direction:column; gap:0.55rem; margin-bottom:0.9rem; }
+.r2-agents .row { display:flex; justify-content:space-between; align-items:baseline; gap:0.7rem; font-size:0.9rem; }
+.r2-agents .who { color:var(--ink); }
+.r2-agents .who small { color:var(--dim); font-family:var(--mono); font-size:0.76rem; display:block; }
+.r2-agents .pips { font-family:var(--mono); font-weight:700; letter-spacing:0.28em; color:var(--line2); white-space:nowrap; }
+.r2-agents .pips .has { color:var(--ink); }
+</style>
 </head>
 <body>
 <nav><div class="inner">
   <a class="brand" href="#top"><svg class="mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><line x1="20.6" y1="20.6" x2="28.5" y2="28.5" style="stroke:var(--accent)" stroke-width="3.6" stroke-linecap="round"/><circle cx="13" cy="13" r="10.2" fill="none" style="stroke:var(--accent)" stroke-width="2.4"/><line x1="8" y1="10.5" x2="17.5" y2="8.5" style="stroke:var(--ink)" stroke-width="1.4" opacity="0.7"/><line x1="8" y1="10.5" x2="12.5" y2="18" style="stroke:var(--ink)" stroke-width="1.4" opacity="0.7"/><line x1="17.5" y1="8.5" x2="12.5" y2="18" style="stroke:var(--attack)" stroke-width="2"/><circle cx="8" cy="10.5" r="2" style="fill:var(--ink)"/><circle cx="17.5" cy="8.5" r="2.2" style="fill:var(--attack)"/><circle cx="12.5" cy="18" r="2.2" style="fill:var(--attack)"/></svg>Sherlock</a>
   <ul>
-    <li><a href="#demo">Demo</a></li>
+    <li><a href="#demo">Rule of Two</a></li>
     <li><a href="#scan">Scan your Mac</a></li>
     <li><a href="#certified">Certified</a></li>
     <li><a href="#langgraph">LangGraph</a></li>
@@ -400,52 +460,41 @@ h1, h2, .stat b, .big, .scan-head h3 { font-variant-numeric: lining-nums; }
 <main>
 <section class="wide demo-sec" id="demo" aria-labelledby="demo-h">
   <div class="sec-head" style="margin-bottom:1.2rem">
-    <p class="kicker">See it work · 36 seconds</p>
-    <h2 id="demo-h">Watch Sherlock check a multi-agent app</h2>
-    <p>A support bot written in LangGraph. Sherlock reads the graph, writes the safety question as a formula, and a SAT solver answers it. Toggle the fixes, or let it play.</p>
+    <p class="kicker">The risk in one toy · Meta's Agents Rule of Two</p>
+    <h2 id="demo-h">Each agent keeps to two of three. Together they have all three.</h2>
+    <p>Meta's <a href="https://ai.meta.com/blog/practical-ai-agent-security/">Agents Rule of Two</a> says one agent should hold at most two of A, B and C — or wait for a person. Here three agents each obey it, and the fleet still leaks. Press play, or toggle a fix and watch the chain break.</p>
   </div>
   <div class="demo-grid">
-      <div class="os-card us demo-card" id="lg-demo">
-        <span class="lbl">Live demo · a support bot we built (web search, customer records, email)</span>
+      <div class="os-card us demo-card" id="r2">
+        <div class="r2-legend">
+          <span class="r2-chip"><b>A</b> reads untrusted input</span>
+          <span class="r2-chip"><b>B</b> reaches secrets or sensitive systems</span>
+          <span class="r2-chip"><b>C</b> changes state or acts on the outside</span>
+        </div>
         <div class="lg-toggles" role="group" aria-label="Fixes">
-          <label><input type="checkbox" id="fx-scoped"> Each node reads only its own keys <span class="mono">input_schema</span></label>
-          <label><input type="checkbox" id="fx-approval"> Email needs your approval <span class="mono">interrupt_before</span></label>
-          <label><input type="checkbox" id="fx-session"> Customer ID comes from the login, not the message</label>
+          <label><input type="checkbox" id="r2-approval"> Sender waits for your approval before it emails out</label>
+          <label><input type="checkbox" id="r2-isolate"> Analyst keeps its own context, ignoring the Reader's notes</label>
         </div>
         <div class="lg-player">
-          <button type="button" class="btn sm" id="lg-play" aria-label="Play the walkthrough">▶ Play walkthrough</button>
-          <div class="lg-progress" aria-hidden="true"><span id="lg-bar"></span></div>
+          <button type="button" class="btn sm" id="r2-play" aria-label="Play the walkthrough">▶ Send the poisoned email</button>
+          <div class="lg-progress" aria-hidden="true"><span id="r2-bar"></span></div>
         </div>
-        <svg id="lg-svg" viewBox="0 0 760 300" role="img" aria-label="The support bot graph, with the selected attack path highlighted"></svg>
-        <p class="lg-sub" id="lg-sub" aria-live="polite">Press play for a one-minute walkthrough, or toggle the fixes yourself.</p>
-        <div class="lg-rules" id="lg-rules"></div>
-        <ol class="steps" id="lg-steps"></ol>
-        <p class="muted" style="font-size:0.82rem">Computed live in your browser by the same checker as above, from the LangGraph code exported with <span class="mono">export(app)</span>. Cost = agents an attacker must hack + times you must click Allow.</p>
+        <svg id="r2-svg" viewBox="0 0 820 300" role="img" aria-label="A poisoned email passing through a Reader, an Analyst and a Sender to the outside"></svg>
+        <div class="r2-tally" id="r2-tally"><span class="lab">The fleet now holds:</span></div>
+        <p class="lg-sub" id="r2-sub" aria-live="polite">Three agents, each within the Rule of Two. Watch what they do together.</p>
+        <ol class="steps" id="r2-steps"></ol>
+        <div class="r2-verdict" id="r2-verdict" aria-live="polite"></div>
       </div>
-      <aside class="os-card tech" aria-labelledby="tech-h">
-        <span class="lbl" id="tech-h">Under the hood · selected rule</span>
-        <div class="tk"><span class="tk-l">1 · Rule</span><pre class="tk-code" id="tk-rule"></pre></div>
-        <div class="tk"><span class="tk-l">2 · Model read from the graph</span><p class="tk-p" id="tk-model"></p></div>
-        <div class="tk"><span class="tk-l">3 · Formula: attacker reach, unrolled over rounds i = 0…N</span>
-          <pre class="tk-code" id="tk-formula"></pre></div>
-        <div class="tk"><span class="tk-l">4 · Solving: CaDiCaL, cheapest attack first</span>
-          <div class="tk-q" id="tk-queries"></div>
-          <p class="tk-p" id="tk-verdict"></p></div>
+      <aside class="os-card tech" aria-labelledby="r2tech-h">
+        <span class="lbl" id="r2tech-h">Why a per-agent review misses it</span>
+        <div class="r2-agents" id="r2-agents"></div>
+        <p class="tk-p">Reviewed alone, every agent passes: none holds more than two of A, B and C. The danger is the <b>path</b> — an A-agent feeds a B-agent feeds a C-agent — so the fleet has all three even though no single agent does.</p>
+        <p class="tk-p">Sherlock reads the whole fleet and searches for that path. It returns the cheapest attack, step by step, or a certificate that none exists — the same checker that runs on your Mac scan below.</p>
+        <a class="btn sm" href="#scan" style="align-self:flex-start">Check your own machine →</a>
       </aside>
   </div>
 </section>
 
-  <section class="watch" aria-labelledby="watch-h">
-    <figure class="watch-fig">
-      <img src="nightwatch.jpg" alt="Rembrandt's The Night Watch: a militia company with muskets, pikes and a drum, led out by two officers in a pool of light" loading="lazy" width="1920" height="1609">
-      <div class="watch-copy">
-        <p class="kicker">On watch</p>
-        <h2 id="watch-h">Every guard checks their own post. Nobody watches the company.</h2>
-        <p class="lead">Each agent is reviewed alone. Sherlock checks how they move together.</p>
-      </div>
-      <figcaption>Rembrandt van Rijn, <i>The Night Watch</i>, 1642 · Rijksmuseum, Amsterdam · Public domain</figcaption>
-    </figure>
-  </section>
   <section class="wide" id="scan" aria-labelledby="scan-h">
     <div class="sec-head">
       <p class="kicker">Scan your Mac</p>
@@ -534,7 +583,7 @@ h1, h2, .stat b, .big, .scan-head h3 { font-variant-numeric: lining-nums; }
       </div>
       <div class="os-card us">
         <span class="lbl">Live demo</span>
-        <p>Watch Sherlock check a LangGraph app, with the formula and the solver's work shown step by step: <a href="#demo">see the demo at the top of the page ↑</a></p>
+        <p>See three agents that each pass the Rule of Two leak a secret together, in the <a href="#demo">toy at the top of the page ↑</a>. The same checker then runs live on your Mac scan below.</p>
       </div>
     </div>
   </section>
@@ -2434,165 +2483,147 @@ $('scan-out').addEventListener('keydown', e => { const r = e.target.closest('[da
 check(SAMPLE, true);
 })();
 </script>
-<script type="application/json" id="lg-sat-data">{"000":[{"queries":[{"t":0,"h":0,"vars":19612,"clauses":62020,"sat":true,"ms":149.2,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":0,"places":11},{"queries":[{"t":0,"h":0,"vars":7478,"clauses":19945,"sat":true,"ms":85.9,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":0,"places":11},{"queries":[{"t":0,"h":0,"vars":7478,"clauses":19945,"sat":true,"ms":83.4,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":0,"places":11}],"001":[{"queries":[{"t":0,"h":0,"vars":24299,"clauses":77282,"sat":true,"ms":162.5,"lemmas":null}],"cheapest":[0,0],"agents":5,"gates":0,"places":11},{"queries":[{"t":0,"h":0,"vars":9168,"clauses":24633,"sat":true,"ms":102.4,"lemmas":null}],"cheapest":[0,0],"agents":5,"gates":0,"places":11},{"queries":[{"t":0,"h":0,"vars":9168,"clauses":24633,"sat":true,"ms":103.7,"lemmas":null}],"cheapest":[0,0],"agents":5,"gates":0,"places":11}],"010":[{"queries":[{"t":0,"h":0,"vars":19613,"clauses":62023,"sat":true,"ms":137.2,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":1,"places":11},{"queries":[{"t":0,"h":0,"vars":7479,"clauses":19948,"sat":true,"ms":84.3,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":1,"places":11},{"queries":[{"t":0,"h":0,"vars":7479,"clauses":19948,"sat":true,"ms":86.5,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":1,"places":11}],"011":[{"queries":[{"t":0,"h":0,"vars":24300,"clauses":77285,"sat":true,"ms":169.8,"lemmas":null}],"cheapest":[0,0],"agents":5,"gates":1,"places":11},{"queries":[{"t":0,"h":0,"vars":9169,"clauses":24636,"sat":true,"ms":101.8,"lemmas":null}],"cheapest":[0,0],"agents":5,"gates":1,"places":11},{"queries":[{"t":0,"h":0,"vars":9169,"clauses":24636,"sat":true,"ms":103.1,"lemmas":null}],"cheapest":[0,0],"agents":5,"gates":1,"places":11}],"100":[{"queries":[{"t":0,"h":0,"vars":2259,"clauses":5266,"sat":true,"ms":25.2,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":0,"places":11},{"queries":[{"t":0,"h":0,"vars":1195,"clauses":2314,"sat":false,"ms":19.6,"lemmas":764},{"t":1,"h":0,"vars":1199,"clauses":2320,"sat":true,"ms":21.0,"lemmas":null}],"cheapest":[1,0],"agents":4,"gates":0,"places":11},{"queries":[{"t":0,"h":0,"vars":1195,"clauses":2314,"sat":true,"ms":21.0,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":0,"places":11}],"101":[{"queries":[{"t":0,"h":0,"vars":2372,"clauses":5490,"sat":true,"ms":24.2,"lemmas":null}],"cheapest":[0,0],"agents":5,"gates":0,"places":11},{"queries":[{"t":0,"h":0,"vars":1269,"clauses":2429,"sat":false,"ms":19.7,"lemmas":652},{"t":1,"h":0,"vars":1274,"clauses":2437,"sat":true,"ms":20.5,"lemmas":null}],"cheapest":[1,0],"agents":5,"gates":0,"places":11},{"queries":[{"t":0,"h":0,"vars":1269,"clauses":2429,"sat":false,"ms":19.4,"lemmas":900},{"t":1,"h":0,"vars":1274,"clauses":2437,"sat":true,"ms":21.8,"lemmas":null}],"cheapest":[1,0],"agents":5,"gates":0,"places":11}],"110":[{"queries":[{"t":0,"h":0,"vars":2260,"clauses":5269,"sat":false,"ms":22.7,"lemmas":1415},{"t":0,"h":1,"vars":2260,"clauses":5268,"sat":true,"ms":23.9,"lemmas":null},{"t":1,"h":0,"vars":2264,"clauses":5275,"sat":false,"ms":23.0,"lemmas":1315},{"t":2,"h":0,"vars":2268,"clauses":5282,"sat":false,"ms":23.3,"lemmas":1315},{"t":3,"h":0,"vars":2272,"clauses":5289,"sat":false,"ms":24.1,"lemmas":1315},{"t":4,"h":0,"vars":2260,"clauses":5265,"sat":false,"ms":22.3,"lemmas":1315}],"cheapest":[0,1],"agents":4,"gates":1,"places":11},{"queries":[{"t":0,"h":0,"vars":1196,"clauses":2317,"sat":false,"ms":19.8,"lemmas":764},{"t":0,"h":1,"vars":1196,"clauses":2316,"sat":false,"ms":19.1,"lemmas":764},{"t":1,"h":0,"vars":1200,"clauses":2323,"sat":true,"ms":20.8,"lemmas":null}],"cheapest":[1,0],"agents":4,"gates":1,"places":11},{"queries":[{"t":0,"h":0,"vars":1196,"clauses":2317,"sat":true,"ms":20.5,"lemmas":null}],"cheapest":[0,0],"agents":4,"gates":1,"places":11}],"111":[{"queries":[{"t":0,"h":0,"vars":2373,"clauses":5493,"sat":false,"ms":23.8,"lemmas":1790},{"t":0,"h":1,"vars":2373,"clauses":5492,"sat":true,"ms":26.1,"lemmas":null},{"t":1,"h":0,"vars":2378,"clauses":5501,"sat":false,"ms":23.8,"lemmas":1418},{"t":2,"h":0,"vars":2383,"clauses":5510,"sat":false,"ms":24.0,"lemmas":1418},{"t":3,"h":0,"vars":2388,"clauses":5519,"sat":false,"ms":22.2,"lemmas":1418},{"t":4,"h":0,"vars":2393,"clauses":5528,"sat":false,"ms":27.5,"lemmas":1418},{"t":5,"h":0,"vars":2373,"clauses":5488,"sat":false,"ms":23.7,"lemmas":1418}],"cheapest":[0,1],"agents":5,"gates":1,"places":11},{"queries":[{"t":0,"h":0,"vars":1270,"clauses":2432,"sat":false,"ms":19.8,"lemmas":652},{"t":0,"h":1,"vars":1270,"clauses":2431,"sat":false,"ms":19.6,"lemmas":652},{"t":1,"h":0,"vars":1275,"clauses":2440,"sat":true,"ms":21.5,"lemmas":null}],"cheapest":[1,0],"agents":5,"gates":1,"places":11},{"queries":[{"t":0,"h":0,"vars":1270,"clauses":2432,"sat":false,"ms":20.0,"lemmas":900},{"t":0,"h":1,"vars":1270,"clauses":2431,"sat":false,"ms":20.6,"lemmas":900},{"t":1,"h":0,"vars":1275,"clauses":2440,"sat":true,"ms":21.1,"lemmas":null}],"cheapest":[1,0],"agents":5,"gates":1,"places":11}]}</script>
-<script type="application/json" id="lg-demo-data">{"000":{"format":"sherlock-scan/1","generated":"support bot example","agents":{"router":{"title":"router","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":false,"ask":{},"flows":[["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":[]},"researcher":{"title":"researcher","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session","web"],"write":["net","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["state:account_summary","net"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","net"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","net"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","net"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","net"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","net"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","net"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"],["web","net"],["web","state:account_summary"],["web","state:customer_id"],["web","state:messages"],["web","state:question"],["web","state:reply"],["web","state:research"],["web","state:session"]],"trusted":false,"strips":[],"notes":["tool web_search: reads the web (its queries leave the app)"]},"account":{"title":"account","read":["data:crm","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["data:crm","state:account_summary"],["data:crm","state:customer_id"],["data:crm","state:messages"],["data:crm","state:question"],["data:crm","state:reply"],["data:crm","state:research"],["data:crm","state:session"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":["tool lookup_customer: as you declared"]},"writer":{"title":"writer","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session","web"],"write":["net","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["state:account_summary","net"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","net"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","net"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","net"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","net"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","net"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","net"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"],["web","net"],["web","state:account_summary"],["web","state:customer_id"],["web","state:messages"],["web","state:question"],["web","state:reply"],["web","state:research"],["web","state:session"]],"trusted":false,"strips":[],"notes":["tool send_email: acts on an outside service"]}},"resources":{"web":{"untrusted":true},"net":{"sink":true},"local":{},"data:crm":{"labels":["customer_pii"]},"state:messages":{"untrusted":true},"state:session":{},"state:question":{},"state:customer_id":{},"state:research":{},"state:account_summary":{},"state:reply":{}},"policies":[{"name":"Customer data never leaves the app","kind":"no_flow","label":"customer_pii"},{"name":"Web pages never steer the account agent","kind":"hijack","agent":"account","sources":["web"]},{"name":"A customer's message never steers the account agent","kind":"hijack","agent":"account","sources":["state:messages"]}],"coverage":{"read":["account","researcher","router","writer"],"assumed":[],"worst":[],"not_checked":["what each tool does beyond the catalog or what you declared","which state keys a node writes, unless you list them in writes=","tools that call interrupt() themselves, unless listed in approval_tools="]}},"001":{"format":"sherlock-scan/1","generated":"support bot example","agents":{"router":{"title":"router","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":false,"ask":{},"flows":[["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":[]},"auth":{"title":"auth","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":false,"ask":{},"flows":[["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":[]},"researcher":{"title":"researcher","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session","web"],"write":["net","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["state:account_summary","net"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","net"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","net"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","net"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","net"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","net"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","net"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"],["web","net"],["web","state:account_summary"],["web","state:customer_id"],["web","state:messages"],["web","state:question"],["web","state:reply"],["web","state:research"],["web","state:session"]],"trusted":false,"strips":[],"notes":["tool web_search: reads the web (its queries leave the app)"]},"account":{"title":"account","read":["data:crm","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["data:crm","state:account_summary"],["data:crm","state:customer_id"],["data:crm","state:messages"],["data:crm","state:question"],["data:crm","state:reply"],["data:crm","state:research"],["data:crm","state:session"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":["tool lookup_customer: as you declared"]},"writer":{"title":"writer","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session","web"],"write":["net","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["state:account_summary","net"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","net"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","net"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","net"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","net"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","net"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","net"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"],["web","net"],["web","state:account_summary"],["web","state:customer_id"],["web","state:messages"],["web","state:question"],["web","state:reply"],["web","state:research"],["web","state:session"]],"trusted":false,"strips":[],"notes":["tool send_email: acts on an outside service"]}},"resources":{"web":{"untrusted":true},"net":{"sink":true},"local":{},"data:crm":{"labels":["customer_pii"]},"state:messages":{"untrusted":true},"state:session":{},"state:question":{},"state:customer_id":{},"state:research":{},"state:account_summary":{},"state:reply":{}},"policies":[{"name":"Customer data never leaves the app","kind":"no_flow","label":"customer_pii"},{"name":"Web pages never steer the account agent","kind":"hijack","agent":"account","sources":["web"]},{"name":"A customer's message never steers the account agent","kind":"hijack","agent":"account","sources":["state:messages"]}],"coverage":{"read":["account","auth","researcher","router","writer"],"assumed":[],"worst":[],"not_checked":["what each tool does beyond the catalog or what you declared","which state keys a node writes, unless you list them in writes=","tools that call interrupt() themselves, unless listed in approval_tools="]}},"010":{"format":"sherlock-scan/1","generated":"support bot example","agents":{"router":{"title":"router","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":false,"ask":{},"flows":[["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":[]},"researcher":{"title":"researcher","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session","web"],"write":["net","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["state:account_summary","net"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","net"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","net"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","net"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","net"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","net"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","net"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"],["web","net"],["web","state:account_summary"],["web","state:customer_id"],["web","state:messages"],["web","state:question"],["web","state:reply"],["web","state:research"],["web","state:session"]],"trusted":false,"strips":[],"notes":["tool web_search: reads the web (its queries leave the app)"]},"account":{"title":"account","read":["data:crm","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["data:crm","state:account_summary"],["data:crm","state:customer_id"],["data:crm","state:messages"],["data:crm","state:question"],["data:crm","state:reply"],["data:crm","state:research"],["data:crm","state:session"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":["tool lookup_customer: as you declared"]},"writer":{"title":"writer","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{"tool:send_email":{"read":["web"],"write":["net"]}},"flows":[["state:account_summary","net"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","net"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","net"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","net"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","net"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","net"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","net"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"],["web","net"],["web","state:account_summary"],["web","state:customer_id"],["web","state:messages"],["web","state:question"],["web","state:reply"],["web","state:research"],["web","state:session"]],"trusted":false,"strips":[],"notes":["tool send_email: acts on an outside service (needs your approval)"]}},"resources":{"web":{"untrusted":true},"net":{"sink":true},"local":{},"data:crm":{"labels":["customer_pii"]},"state:messages":{"untrusted":true},"state:session":{},"state:question":{},"state:customer_id":{},"state:research":{},"state:account_summary":{},"state:reply":{}},"policies":[{"name":"Customer data never leaves the app","kind":"no_flow","label":"customer_pii"},{"name":"Web pages never steer the account agent","kind":"hijack","agent":"account","sources":["web"]},{"name":"A customer's message never steers the account agent","kind":"hijack","agent":"account","sources":["state:messages"]}],"coverage":{"read":["account","researcher","router","writer"],"assumed":[],"worst":[],"not_checked":["what each tool does beyond the catalog or what you declared","which state keys a node writes, unless you list them in writes=","tools that call interrupt() themselves, unless listed in approval_tools="]}},"011":{"format":"sherlock-scan/1","generated":"support bot example","agents":{"router":{"title":"router","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":false,"ask":{},"flows":[["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":[]},"auth":{"title":"auth","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":false,"ask":{},"flows":[["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":[]},"researcher":{"title":"researcher","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session","web"],"write":["net","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["state:account_summary","net"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","net"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","net"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","net"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","net"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","net"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","net"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"],["web","net"],["web","state:account_summary"],["web","state:customer_id"],["web","state:messages"],["web","state:question"],["web","state:reply"],["web","state:research"],["web","state:session"]],"trusted":false,"strips":[],"notes":["tool web_search: reads the web (its queries leave the app)"]},"account":{"title":"account","read":["data:crm","state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{},"flows":[["data:crm","state:account_summary"],["data:crm","state:customer_id"],["data:crm","state:messages"],["data:crm","state:question"],["data:crm","state:reply"],["data:crm","state:research"],["data:crm","state:session"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"]],"trusted":false,"strips":[],"notes":["tool lookup_customer: as you declared"]},"writer":{"title":"writer","read":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"write":["state:account_summary","state:customer_id","state:messages","state:question","state:reply","state:research","state:session"],"injectable":true,"ask":{"tool:send_email":{"read":["web"],"write":["net"]}},"flows":[["state:account_summary","net"],["state:account_summary","state:customer_id"],["state:account_summary","state:messages"],["state:account_summary","state:question"],["state:account_summary","state:reply"],["state:account_summary","state:research"],["state:account_summary","state:session"],["state:customer_id","net"],["state:customer_id","state:account_summary"],["state:customer_id","state:messages"],["state:customer_id","state:question"],["state:customer_id","state:reply"],["state:customer_id","state:research"],["state:customer_id","state:session"],["state:messages","net"],["state:messages","state:account_summary"],["state:messages","state:customer_id"],["state:messages","state:question"],["state:messages","state:reply"],["state:messages","state:research"],["state:messages","state:session"],["state:question","net"],["state:question","state:account_summary"],["state:question","state:customer_id"],["state:question","state:messages"],["state:question","state:reply"],["state:question","state:research"],["state:question","state:session"],["state:reply","net"],["state:reply","state:account_summary"],["state:reply","state:customer_id"],["state:reply","state:messages"],["state:reply","state:question"],["state:reply","state:research"],["state:reply","state:session"],["state:research","net"],["state:research","state:account_summary"],["state:research","state:customer_id"],["state:research","state:messages"],["state:research","state:question"],["state:research","state:reply"],["state:research","state:session"],["state:session","net"],["state:session","state:account_summary"],["state:session","state:customer_id"],["state:session","state:messages"],["state:session","state:question"],["state:session","state:reply"],["state:session","state:research"],["web","net"],["web","state:account_summary"],["web","state:customer_id"],["web","state:messages"],["web","state:question"],["web","state:reply"],["web","state:research"],["web","state:session"]],"trusted":false,"strips":[],"notes":["tool send_email: acts on an outside service (needs your approval)"]}},"resources":{"web":{"untrusted":true},"net":{"sink":true},"local":{},"data:crm":{"labels":["customer_pii"]},"state:messages":{"untrusted":true},"state:session":{},"state:question":{},"state:customer_id":{},"state:research":{},"state:account_summary":{},"state:reply":{}},"policies":[{"name":"Customer data never leaves the app","kind":"no_flow","label":"customer_pii"},{"name":"Web pages never steer the account agent","kind":"hijack","agent":"account","sources":["web"]},{"name":"A customer's message never steers the account agent","kind":"hijack","agent":"account","sources":["state:messages"]}],"coverage":{"read":["account","auth","researcher","router","writer"],"assumed":[],"worst":[],"not_checked":["what each tool does beyond the catalog or what you declared","which state keys a node writes, unless you list them in writes=","tools that call interrupt() themselves, unless listed in approval_tools="]}},"100":{"format":"sherlock-scan/1","generated":"support bot example","agents":{"router":{"title":"router","read":["state:messages"],"write":["state:customer_id","state:question"],"injectable":false,"ask":{},"flows":[["state:messages","state:customer_id"],["state:messages","state:question"]],"trusted":false,"strips":[],"notes":[]},"researcher":{"title":"researcher","read":["state:question","web"],"write":["net","state:research"],"injectable":true,"ask":{},"flows":[["state:question","net"],["state:question","state:research"],["web","net"],["web","state:research"]],"trusted":false,"strips":[],"notes":["tool web_search: reads the web (its queries leave the app)"]},"account":{"title":"account","read":["data:crm","state:customer_id"],"write":["state:account_summary"],"injectable":true,"ask":{},"flows":[["data:crm","state:account_summary"],["state:customer_id","state:account_summary"]],"trusted":false,"strips":[],"notes":["tool lookup_customer: as you declared"]},"writer":{"title":"writer","read":["state:account_summary","state:research","web"],"write":["net","state:reply"],"injectable":true,"ask":{},"flows":[["state:account_summary","net"],["state:account_summary","state:reply"],["state:research","net"],["state:research","state:reply"],["web","net"],["web","state:reply"]],"trusted":false,"strips":[],"notes":["tool send_email: acts on an outside service"]}},"resources":{"web":{"untrusted":true},"net":{"sink":true},"local":{},"data:crm":{"labels":["customer_pii"]},"state:messages":{"untrusted":true},"state:session":{},"state:question":{},"state:customer_id":{},"state:research":{},"state:account_summary":{},"state:reply":{}},"policies":[{"name":"Customer data never leaves the app","kind":"no_flow","label":"customer_pii"},{"name":"Web pages never steer the account agent","kind":"hijack","agent":"account","sources":["web"]},{"name":"A customer's message never steers the account agent","kind":"hijack","agent":"account","sources":["state:messages"]}],"coverage":{"read":["account","researcher","router","writer"],"assumed":[],"worst":[],"not_checked":["what each tool does beyond the catalog or what you declared","which state keys a node writes, unless you list them in writes=","tools that call interrupt() themselves, unless listed in approval_tools="]}},"101":{"format":"sherlock-scan/1","generated":"support bot example","agents":{"router":{"title":"router","read":["state:messages"],"write":["state:question"],"injectable":false,"ask":{},"flows":[["state:messages","state:question"]],"trusted":false,"strips":[],"notes":[]},"auth":{"title":"auth","read":["state:session"],"write":["state:customer_id"],"injectable":false,"ask":{},"flows":[["state:session","state:customer_id"]],"trusted":false,"strips":[],"notes":[]},"researcher":{"title":"researcher","read":["state:question","web"],"write":["net","state:research"],"injectable":true,"ask":{},"flows":[["state:question","net"],["state:question","state:research"],["web","net"],["web","state:research"]],"trusted":false,"strips":[],"notes":["tool web_search: reads the web (its queries leave the app)"]},"account":{"title":"account","read":["data:crm","state:customer_id"],"write":["state:account_summary"],"injectable":true,"ask":{},"flows":[["data:crm","state:account_summary"],["state:customer_id","state:account_summary"]],"trusted":false,"strips":[],"notes":["tool lookup_customer: as you declared"]},"writer":{"title":"writer","read":["state:account_summary","state:research","web"],"write":["net","state:reply"],"injectable":true,"ask":{},"flows":[["state:account_summary","net"],["state:account_summary","state:reply"],["state:research","net"],["state:research","state:reply"],["web","net"],["web","state:reply"]],"trusted":false,"strips":[],"notes":["tool send_email: acts on an outside service"]}},"resources":{"web":{"untrusted":true},"net":{"sink":true},"local":{},"data:crm":{"labels":["customer_pii"]},"state:messages":{"untrusted":true},"state:session":{},"state:question":{},"state:customer_id":{},"state:research":{},"state:account_summary":{},"state:reply":{}},"policies":[{"name":"Customer data never leaves the app","kind":"no_flow","label":"customer_pii"},{"name":"Web pages never steer the account agent","kind":"hijack","agent":"account","sources":["web"]},{"name":"A customer's message never steers the account agent","kind":"hijack","agent":"account","sources":["state:messages"]}],"coverage":{"read":["account","auth","researcher","router","writer"],"assumed":[],"worst":[],"not_checked":["what each tool does beyond the catalog or what you declared","which state keys a node writes, unless you list them in writes=","tools that call interrupt() themselves, unless listed in approval_tools="]}},"110":{"format":"sherlock-scan/1","generated":"support bot example","agents":{"router":{"title":"router","read":["state:messages"],"write":["state:customer_id","state:question"],"injectable":false,"ask":{},"flows":[["state:messages","state:customer_id"],["state:messages","state:question"]],"trusted":false,"strips":[],"notes":[]},"researcher":{"title":"researcher","read":["state:question","web"],"write":["net","state:research"],"injectable":true,"ask":{},"flows":[["state:question","net"],["state:question","state:research"],["web","net"],["web","state:research"]],"trusted":false,"strips":[],"notes":["tool web_search: reads the web (its queries leave the app)"]},"account":{"title":"account","read":["data:crm","state:customer_id"],"write":["state:account_summary"],"injectable":true,"ask":{},"flows":[["data:crm","state:account_summary"],["state:customer_id","state:account_summary"]],"trusted":false,"strips":[],"notes":["tool lookup_customer: as you declared"]},"writer":{"title":"writer","read":["state:account_summary","state:research"],"write":["state:reply"],"injectable":true,"ask":{"tool:send_email":{"read":["web"],"write":["net"]}},"flows":[["state:account_summary","net"],["state:account_summary","state:reply"],["state:research","net"],["state:research","state:reply"],["web","net"],["web","state:reply"]],"trusted":false,"strips":[],"notes":["tool send_email: acts on an outside service (needs your approval)"]}},"resources":{"web":{"untrusted":true},"net":{"sink":true},"local":{},"data:crm":{"labels":["customer_pii"]},"state:messages":{"untrusted":true},"state:session":{},"state:question":{},"state:customer_id":{},"state:research":{},"state:account_summary":{},"state:reply":{}},"policies":[{"name":"Customer data never leaves the app","kind":"no_flow","label":"customer_pii"},{"name":"Web pages never steer the account agent","kind":"hijack","agent":"account","sources":["web"]},{"name":"A customer's message never steers the account agent","kind":"hijack","agent":"account","sources":["state:messages"]}],"coverage":{"read":["account","researcher","router","writer"],"assumed":[],"worst":[],"not_checked":["what each tool does beyond the catalog or what you declared","which state keys a node writes, unless you list them in writes=","tools that call interrupt() themselves, unless listed in approval_tools="]}},"111":{"format":"sherlock-scan/1","generated":"support bot example","agents":{"router":{"title":"router","read":["state:messages"],"write":["state:question"],"injectable":false,"ask":{},"flows":[["state:messages","state:question"]],"trusted":false,"strips":[],"notes":[]},"auth":{"title":"auth","read":["state:session"],"write":["state:customer_id"],"injectable":false,"ask":{},"flows":[["state:session","state:customer_id"]],"trusted":false,"strips":[],"notes":[]},"researcher":{"title":"researcher","read":["state:question","web"],"write":["net","state:research"],"injectable":true,"ask":{},"flows":[["state:question","net"],["state:question","state:research"],["web","net"],["web","state:research"]],"trusted":false,"strips":[],"notes":["tool web_search: reads the web (its queries leave the app)"]},"account":{"title":"account","read":["data:crm","state:customer_id"],"write":["state:account_summary"],"injectable":true,"ask":{},"flows":[["data:crm","state:account_summary"],["state:customer_id","state:account_summary"]],"trusted":false,"strips":[],"notes":["tool lookup_customer: as you declared"]},"writer":{"title":"writer","read":["state:account_summary","state:research"],"write":["state:reply"],"injectable":true,"ask":{"tool:send_email":{"read":["web"],"write":["net"]}},"flows":[["state:account_summary","net"],["state:account_summary","state:reply"],["state:research","net"],["state:research","state:reply"],["web","net"],["web","state:reply"]],"trusted":false,"strips":[],"notes":["tool send_email: acts on an outside service (needs your approval)"]}},"resources":{"web":{"untrusted":true},"net":{"sink":true},"local":{},"data:crm":{"labels":["customer_pii"]},"state:messages":{"untrusted":true},"state:session":{},"state:question":{},"state:customer_id":{},"state:research":{},"state:account_summary":{},"state:reply":{}},"policies":[{"name":"Customer data never leaves the app","kind":"no_flow","label":"customer_pii"},{"name":"Web pages never steer the account agent","kind":"hijack","agent":"account","sources":["web"]},{"name":"A customer's message never steers the account agent","kind":"hijack","agent":"account","sources":["state:messages"]}],"coverage":{"read":["account","auth","researcher","router","writer"],"assumed":[],"worst":[],"not_checked":["what each tool does beyond the catalog or what you declared","which state keys a node writes, unless you list them in writes=","tools that call interrupt() themselves, unless listed in approval_tools="]}}}</script>
 <script>
 (() => {
-const V = JSON.parse(document.getElementById('lg-demo-data').textContent);
-const SATD = JSON.parse(document.getElementById('lg-sat-data').textContent);
-const RULE_SRC = ['<span class="k">never</span> customer_pii -&gt; internet',
-  '<span class="k">attacker controls</span> web\n<span class="k">never hijack</span> account',
-  '<span class="k">attacker controls</span> state:messages\n<span class="k">never hijack</span> account'];
-const GOAL = ['S[customer_pii, internet, N]', 'H[account, N]', 'H[account, N]'];
-let revealTimers = [];
-function renderTech(k, r, animate) {
-  revealTimers.forEach(clearTimeout); revealTimers = [];
-  const d = V[k], t = SATD[k][r], m = Engine.load(d);
-  const ai = m.agents.filter(a => a.ai).length, N = t.agents + 2 * t.places + 1;
-  const appr = m.gates.map(g => g.name.replace('tool:', '')).join(', ');
-  $('tk-rule').innerHTML = RULE_SRC[r] + '\n<span class="k">tolerate</span> 0 agents, 0 approvals';
-  $('tk-model').innerHTML = `<b>${t.agents}</b> agents (${ai} AI, ${t.agents - ai} plain code) · <b>${t.places}</b> places (state keys, CRM, web, internet) · <b>${t.gates}</b> approval${t.gates === 1 ? '' : 's'}${appr ? ': ' + appr : ''}. Reads and writes come from each node's <span class="mono">input_schema</span> and tools.`;
-  $('tk-formula').innerHTML =
-`<span class="c"># taken over: hacked, or reads attacker text (H = steered)</span>
-H[a,i+1] ⇐ H[a,i] ∨ B[a] ∨ ⋁<sub>r</sub> T[r,i] ∧ reads(a,r)
-<span class="c"># attacker text spreads: written by a steered agent, or relayed</span>
-T[w,i+1] ⇐ T[w,i] ∨ ⋁<sub>a</sub> H[a,i] ∧ writes(a,w) ∨ relay(a,r,w) ∧ T[r,i]
-<span class="c"># secrets are copied the same way</span>
-S[l,w,i+1] ⇐ S[l,w,i] ∨ ⋁<sub>a,r</sub> S[l,r,i] ∧ reads(a,r) ∧ writes(a,w) ∧ (H[a,i] ∨ relay)
-<span class="c"># budget, then ask: can the goal hold at round N = ${N}?</span>
-<span class="g">Σ B[a] ≤ t,  Σ G[g] ≤ h,  goal: ${GOAL[r]}</span>`;
-  $('tk-queries').innerHTML = t.queries.map((q, i) =>
-    `<div class="${q.sat ? 'sat' : 'unsat'}${animate ? ' hidden' : ''}" data-i="${i}"><span>t=${q.t} h=${q.h}</span>` +
-    `<span>${q.vars.toLocaleString()} vars · ${q.clauses.toLocaleString()} clauses</span>` +
-    `<span class="${q.sat ? 'ans-s' : 'ans-u'}">${q.sat ? 'SAT: attack' : `UNSAT: proof ${q.lemmas ?? '–'} steps`} · ${Math.round(q.ms)} ms</span></div>`).join('');
-  const c = t.cheapest, verdict = !c ? 'No attack at any budget: the rule holds even if every agent is hacked.' :
-    c[0] === 0 && c[1] === 0 ? 'The very first query is satisfiable: an attack that needs <b>nothing</b>. The solver\'s answer is replayed by a simulator to get the steps on the left.' :
-    `Every cheaper query is <b>unsatisfiable</b>, each with a DRAT proof. The cheapest attack needs <b>${c[0] ? c[0] + ' hacked agent' : ''}${c[0] && c[1] ? ' + ' : ''}${c[1] ? c[1] + ' approval' : ''}</b>, so at budget (0, 0) the rule passes.`;
-  $('tk-verdict').innerHTML = verdict;
-  if (animate) [...$('tk-queries').children].forEach((row, i) =>
-    revealTimers.push(setTimeout(() => row.classList.remove('hidden'), 350 + i * Math.min(500, 3000 / t.queries.length))));
-}
 const $ = id => document.getElementById(id);
 const esc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const NODES = {   // id: [x, y, label, sub, kind]
-  web: [20, 25, 'web page', 'ATTACKER', 'src'], msg: [20, 125, 'customer message', 'ATTACKER', 'src'],
-  session: [20, 225, 'login session', 'TRUSTED', ''], researcher: [190, 25, 'researcher', 'web_search', ''],
-  router: [190, 125, 'router', 'plain code', ''], auth: [190, 225, 'auth', 'plain code', ''],
-  account: [370, 175, 'account agent', 'lookup_customer', ''], crm: [560, 225, 'CRM', 'CUSTOMER DATA', 'sec'],
-  writer: [370, 60, 'writer', 'drafts reply', ''], email: [560, 60, 'email', 'send_email', ''],
-  internet: [640, 140, 'internet', 'OUTSIDE', 'src']};
-const W = 116, H = 40;
-const EDGES = [['web', 'researcher'], ['msg', 'router'], ['router', 'researcher'], ['router', 'account', 'nosess'],
-  ['session', 'auth', 'sess'], ['auth', 'account', 'sess'], ['crm', 'account'], ['researcher', 'writer'],
-  ['account', 'writer'], ['writer', 'email'], ['email', 'internet', 'gate']];
-const NODE_OF = { web: 'web', 'state:messages': 'msg', 'data:crm': 'crm', net: 'internet', 'state:session': 'session' };
-let rule = 0;
-const key = () => ['fx-scoped', 'fx-approval', 'fx-session'].map(i => $(i).checked ? 1 : 0).join('');
-const cost = p => !p ? 'never' : p.t === 0 && p.h === 0 ? 'FREE' : [p.t ? `${p.t} hacked agent${p.t > 1 ? 's' : ''}` : '', p.h ? `${p.h} approval${p.h > 1 ? 's' : ''}` : ''].filter(Boolean).join(' + ');
+const W = 122, H = 48;
+// id: [x, y, label, sub, kind]
+const NODES = {
+  email:   [16, 118, 'poisoned email', 'UNTRUSTED', 'src'],
+  reader:  [186, 118, 'Reader', 'sorts the inbox', ''],
+  analyst: [356, 118, 'Analyst', 'reads records', ''],
+  sender:  [526, 118, 'Sender', 'emails replies', ''],
+  data:    [356, 20, 'customer data', 'SECRET', 'sec'],
+  outside: [690, 118, 'the outside', 'SINK', 'src'],
+};
+const OWN = { reader: 'A', analyst: 'B', sender: 'BC' };     // each agent's own A/B/C (all <= 2)
+const ROLE = { reader: 'takes in untrusted email', analyst: 'reaches customer data', sender: 'can email the outside' };
+const cx = n => NODES[n][0] + W / 2, cy = n => NODES[n][1] + H / 2;
 
-function path(m, p, pt) {      // the attack as steps, plus which diagram nodes it touches
-  const steps = [], hit = new Set(), res = pt.res, seenA = new Set(), seenR = new Set();
-  const NAME = { account: 'account agent', auth: 'login step' }, T = i => NAME[m.agents[i].id] || m.agents[i].id;
-  const where = r => r === 'web' ? 'a web page' : r === 'state:messages' ? 'the customer message' : r.replace('state:', '');
-  const mark = r => NODE_OF[r] && hit.add(NODE_OF[r]);
-  m.gates.forEach((g, j) => { if (pt.G.has(j)) { steps.push(`You click Allow on the ${T(g.agent)}'s ${g.name.replace('tool:', '')}.`); hit.add('email'); } });
-  const agent = i => { if (seenA.has(i)) return; seenA.add(i); hit.add(m.agents[i].id); const w = res.cor.get(i);
-    if (w.why === 'hack') steps.push(`The attacker breaks into the ${T(i)}.`);
-    else { taint(w.res); steps.push(`The ${T(i)} reads ${where(w.res)} and follows the attacker's text.`); } };
-  const taint = r => { if (seenR.has(r)) return; seenR.add(r); mark(r); const w = res.taint.get(r);
-    if (w.why === 'source') steps.push(r === 'web' ? 'An attacker plants text on a web page.' : r === 'state:messages' ? 'The attacker sends the bot a message.' : `The attacker writes ${where(r)}.`);
-    else if (w.why === 'written') { agent(w.agent); hit.add(m.agents[w.agent].id); }
-    else { taint(w.from); hit.add(m.agents[w.agent].id); steps.push(`The ${T(w.agent)} passes it on to ${where(r)} as its normal job.`); } };
-  if (p.kind === 'hijack') agent(m.idx[p.agent]);
-  else { const hops = []; let cur = pt.target;
-    for (;;) { const w = res.lab[cur].get(p.label); if (w.why === 'origin') break; hops.push([w, cur]); cur = w.from; }
-    mark(cur); steps.push('The target: customer records in the CRM.');
-    for (const [w, d] of hops.reverse()) { hit.add(m.agents[w.agent].id); mark(d);
-      if (!w.honest) agent(w.agent);
-      steps.push(d === 'net' ? `The ${T(w.agent)} sends it out.` : `The ${T(w.agent)} passes it to ${d.replace('state:', '')}.`); } }
-  return { steps, hit };
+// the attack, as a sequence of scenes. node lights a box; edge lights a link; tally fills A/B/C.
+const SETUP = ['email', 'reader', 'r2a', 'data', 'a2s', 'out'];
+const SCENE = {
+  email: { node: 'email', cap: 'An attacker hides instructions inside an incoming email.' },
+  reader: { node: 'reader', edge: ['email', 'reader'], tally: 'A',
+            cap: 'The Reader takes in untrusted text [A] and follows the hidden instructions.' },
+  r2a:    { node: 'analyst', edge: ['reader', 'analyst'],
+            cap: 'It copies them into the notes the Analyst reads next.' },
+  data:   { node: 'data', edge: ['data', 'analyst'], tally: 'B',
+            cap: 'Told to, the Analyst reaches the customer record [B] and pastes it into the draft reply.' },
+  a2s:    { node: 'sender', edge: ['analyst', 'sender'],
+            cap: 'The Sender picks up the draft, data and all.' },
+  out:    { node: 'outside', edge: ['sender', 'outside'], tally: 'C',
+            cap: 'The Sender acts on the outside [C] and emails the record away.' },
+};
+const EDGES = [['email', 'reader'], ['reader', 'analyst'], ['data', 'analyst'], ['analyst', 'sender'], ['sender', 'outside', 'gate']];
+
+const VERDICT = {
+  fail: ['fail', '<b>No agent broke the Rule of Two.</b> The Reader holds only A, the Analyst only B, the Sender B and C — each within the limit of two. But the path chains A → B → C, so the <b>fleet</b> holds all three. Customer data leaves with nobody hacked and no Allow clicked. Sherlock calls this a <b>FREE</b> attack.'],
+  approval: ['safe', '<b>Now the only way out runs through you.</b> The Sender waits for an Allow before it emails — the Rule’s exception, a person in the loop. The cost rises from FREE to “needs one approval,” and that click is the last line of defense.'],
+  isolate: ['safe', '<b>The chain is broken.</b> With its own context, the Analyst never reads what the Reader wrote, so untrusted text [A] never reaches the data [B]. No path holds all three, and Sherlock proves the fleet safe.'],
+};
+
+function scenes() {
+  const appr = $('r2-approval').checked, iso = $('r2-isolate').checked;
+  if (iso) return { steps: ['email', 'reader', 'cut'], verdict: 'isolate' };
+  if (appr) return { steps: ['email', 'reader', 'r2a', 'data', 'a2s', 'gate'], verdict: 'approval' };
+  return { steps: SETUP, verdict: 'fail' };
 }
 
-function render() {
-  const k = key(), d = V[k], m = Engine.load(d), front = Engine.search(m, true).front;
-  const sess = k[2] === '1', gate = k[1] === '1';
-  $('lg-rules').innerHTML = m.policies.map((p, i) => { const pt = front[i][0];
-    return `<button type="button" class="lg-rule" data-r="${i}" aria-pressed="${i === rule}"><span>${esc(p.name)}</span>` +
-      `<span style="display:flex;gap:0.6rem;align-items:center"><span class="cost">${cost(pt)}</span>` +
-      `<span class="pill ${pt && pt.t === 0 && pt.h === 0 ? 'fail' : 'pass'}">${pt && pt.t === 0 && pt.h === 0 ? 'FAIL' : 'PASS'}</span></span></button>`; }).join('');
-  const pt = front[rule][0], pa = pt ? path(m, m.policies[rule], pt) : { steps: [], hit: new Set() };
-  $('lg-steps').innerHTML = pt ? pa.steps.map(x => `<li>${esc(x)}</li>`).join('') :
-    '<li>No attack exists at any cost.</li>';
-  const c = n => [NODES[n][0] + W / 2, NODES[n][1] + H / 2];
-  let h = '<defs><marker id="lga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>';
+let lit = new Set(), litE = new Set(), tally = new Set(), gateStop = false, cut = false;
+
+function draw() {
+  const appr = $('r2-approval').checked, iso = $('r2-isolate').checked;
+  let h = '<defs><marker id="r2a-mk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>';
   for (const [a, b, tag] of EDGES) {
-    const off = (tag === 'nosess' && sess) || (tag === 'sess' && !sess);
-    const [x1, y1] = c(a), [x2, y2] = c(b);
-    const atk = !off && pa.hit.has(a) && pa.hit.has(b);
-    const cls = 'ed' + (off ? ' off' : '') + (atk ? ' atk' : (tag === 'gate' && gate ? ' gate' : ''));
-    h += `<path class="${cls}" ${atk ? 'marker-end="url(#lga)"' : ''} d="M${x1},${y1} L${x2},${y2}"/>`;
+    const off = (iso && a === 'reader' && b === 'analyst');
+    const isGate = (tag === 'gate' && appr);
+    const on = litE.has(a + '>' + b);
+    const cls = 'ed' + (off ? ' off' : '') + (on ? ' lit' : (isGate ? ' gate' : ''));
+    h += `<path class="${cls}" ${on ? 'marker-end="url(#r2a-mk)"' : ''} d="M${cx(a)},${cy(a)} L${cx(b)},${cy(b)}"/>`;
   }
   for (const [n, [x, y, label, sub, kind]] of Object.entries(NODES)) {
-    const off = (n === 'auth' || n === 'session') && !sess;
-    const cls = ['nd', kind, pa.hit.has(n) ? 'atk' : '', off ? 'off' : ''].join(' ');
-    const sb = n === 'email' && gate ? 'YOU APPROVE' : sub;
-    h += `<g class="${cls}"><rect x="${x}" y="${y}" width="${W}" height="${H}" rx="7"/><text x="${x + W / 2}" y="${y + 18}" text-anchor="middle">${label}</text><text class="sub" x="${x + W / 2}" y="${y + 32}" text-anchor="middle">${sb}</text></g>`;
+    const isGate = n === 'sender' && appr;
+    const cls = ['nd', kind, isGate ? 'gate' : '', lit.has(n) ? 'lit' : ''].join(' ').trim();
+    const sb = n === 'sender' && appr ? 'WAITS FOR YOU' : sub;
+    let pips = '';
+    if (OWN[n]) {
+      const span = L => `<tspan class="${OWN[n].includes(L) ? 'has' : ''}">${L}</tspan>`;
+      pips = `<text class="pip" x="${x + W / 2}" y="${y + H - 6}" text-anchor="middle">${span('A')} ${span('B')} ${span('C')}</text>`;
+    }
+    const subY = OWN[n] ? y + 30 : y + 31;
+    h += `<g class="${cls}"><rect x="${x}" y="${y}" width="${W}" height="${H}" rx="7"/>` +
+         `<text x="${x + W / 2}" y="${y + 18}" text-anchor="middle">${label}</text>` +
+         `<text class="sub" x="${x + W / 2}" y="${subY}" text-anchor="middle">${sb}</text>${pips}</g>`;
   }
-  $('lg-svg').innerHTML = h;
-  renderTech(k, rule, !!timer);
+  $('r2-svg').innerHTML = h;
+  $('r2-tally').innerHTML = '<span class="lab">The fleet now holds:</span>' +
+    ['A', 'B', 'C'].map(L => `<span class="t ${tally.has(L) ? 'on' : ''}">${L}</span>`).join('');
 }
-['fx-scoped', 'fx-approval', 'fx-session'].forEach(i => $(i).addEventListener('change', e => { if (e.isTrusted) stop(); render(); }));
-$('lg-rules').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b) { stop(); rule = +b.dataset.r; render(); } });
 
-// ---- the walkthrough: each scene sets the fixes and a rule, then explains ----
-const SCENES = [
-  ['000', 0, 'This is a support bot built with <i>LangGraph</i>: a router, a researcher that searches the web, an account agent that reads customer records, a writer, and an email tool.'],
-  ['000', 0, 'As usually written, every node shares one message list and email sends without asking. Sherlock finds a <b>free</b> attack: the attacker\'s text in the conversation steers the account agent and the writer, which emails customer data out.'],
-  ['000', 2, 'It also finds that a customer\'s own message can steer the account agent into looking up <b>someone else\'s record</b>. Also free.'],
-  ['100', 1, 'Fix 1: give each node only the state keys it needs (<i>input_schema</i>). Web text can no longer reach the account agent: that attack now needs a <i>hacked agent</i>.'],
-  ['110', 0, 'Fix 2: ask before sending email (<i>interrupt_before</i>). Customer data can now leave only if <i>you click Allow</i>, so the reviewer is the last line of defense.'],
-  ['110', 2, 'But the router still copies the customer\'s message into <i>customer_id</i>. A plain-code node in the middle is the bridge, and that attack is <b>still free</b>.'],
-  ['111', 2, 'Fix 3: take the customer ID from the login session, not the message. Now this rule holds too: breaking it would need a <i>hacked agent</i>.'],
-  ['111', 0, 'Every rule now passes. Each pass comes with a <i>certificate</i> you can check yourself. Your turn: toggle the fixes above.'],
-];
-const SCENE_MS = 4500;
-let timer = null, scene = 0, played = false;
-function setFixes(k) {
-  ['fx-scoped', 'fx-approval', 'fx-session'].forEach((id, i) => {
-    const on = k[i] === '1', box = $(id);
-    if (box.checked !== on) { box.checked = on; const l = box.closest('label'); l.classList.add('flash'); setTimeout(() => l.classList.remove('flash'), 1200); }
+function reset() {
+  lit = new Set(); litE = new Set(); tally = new Set();
+  $('r2-steps').innerHTML = ''; $('r2-verdict').className = 'r2-verdict'; $('r2-verdict').innerHTML = '';
+  $('r2-bar').style.width = '0%';
+  draw();
+}
+
+function finish(v) {
+  const [cls, html] = VERDICT[v];
+  $('r2-verdict').className = 'r2-verdict ' + cls;
+  $('r2-verdict').innerHTML = html;
+}
+
+let timers = [];
+function stop() { timers.forEach(clearTimeout); timers = []; $('r2-play').textContent = '↻ Replay'; }
+
+function play() {
+  stop(); reset();
+  $('r2-play').textContent = '❚❚ Playing…';
+  const { steps, verdict } = scenes();
+  const sub = $('r2-sub');
+  steps.forEach((key, i) => {
+    timers.push(setTimeout(() => {
+      if (key === 'cut') {
+        $('r2-svg').querySelectorAll('.ed')[1]?.classList.add('off');   // reader->analyst
+        sub.textContent = 'With its own context, the Analyst never sees the Reader’s notes. The chain stops here.';
+      } else if (key === 'gate') {
+        litE.add('sender>outside'); draw();
+        $('r2-svg').querySelectorAll('.ed.lit').forEach(e => { if (e.getAttribute('d').startsWith(`M${cx('sender')}`)) { e.classList.remove('lit'); e.classList.add('gate'); e.removeAttribute('marker-end'); } });
+        sub.textContent = 'The Sender is about to email it out — but it now waits for you to click Allow.';
+      } else {
+        const s = SCENE[key];
+        if (s.node) lit.add(s.node);
+        if (s.edge) litE.add(s.edge[0] + '>' + s.edge[1]);
+        if (s.tally) tally.add(s.tally);
+        draw();
+        sub.innerHTML = s.cap;
+        $('r2-steps').insertAdjacentHTML('beforeend', `<li>${s.cap}</li>`);
+      }
+      $('r2-bar').style.width = `${((i + 1) / steps.length) * 100}%`;
+      if (i === steps.length - 1) { finish(verdict); stop(); }
+    }, 350 + i * 1050));
   });
 }
-function show(i) {
-  const [k, r, text] = SCENES[i];
-  setFixes(k); rule = r; render();
-  $('lg-sub').innerHTML = text;
-  $('lg-bar').style.width = `${((i + 1) / SCENES.length) * 100}%`;
-}
-function stop() {
-  if (!timer) return;
-  clearInterval(timer); timer = null;
-  $('lg-play').textContent = scene >= SCENES.length - 1 ? '↻ Replay walkthrough' : '▶ Resume walkthrough';
-}
-function play() {
-  played = true;
-  if (timer) { stop(); return; }
-  if (scene >= SCENES.length - 1) scene = 0;
-  $('lg-play').textContent = '❚❚ Pause';
-  show(scene);
-  timer = setInterval(() => {
-    if (scene >= SCENES.length - 1) { stop(); return; }
-    show(++scene);
-  }, SCENE_MS);
-}
-$('lg-play').addEventListener('click', play);
-render();
-// play once when the demo first scrolls into view, unless the visitor prefers less motion
+
+// the per-agent panel in the aside: each agent's own letters, all within two
+$('r2-agents').innerHTML = ['reader', 'analyst', 'sender'].map(n => {
+  const pips = ['A', 'B', 'C'].map(L => `<span class="${OWN[n].includes(L) ? 'has' : ''}">${L}</span>`).join(' ');
+  return `<div class="row"><span class="who">${NODES[n][2]}<small>${ROLE[n]}</small></span><span class="pips">${pips}</span></div>`;
+}).join('') + '<div class="row"><span class="who" style="color:var(--attack)">the fleet, chained</span><span class="pips" style="color:var(--attack)"><span class="has" style="color:var(--attack)">A</span> <span class="has" style="color:var(--attack)">B</span> <span class="has" style="color:var(--attack)">C</span></span></div>';
+
+['r2-approval', 'r2-isolate'].forEach(id => $(id).addEventListener('change', () => { stop(); $('r2-play').textContent = '▶ Send the poisoned email'; reset(); $('r2-sub').textContent = 'Three agents, each within the Rule of Two. Watch what they do together.'; }));
+$('r2-play').addEventListener('click', play);
+reset();
+
+// play once when it scrolls into view, unless the visitor prefers less motion
+let played = false;
 if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
   const io = new IntersectionObserver(es => {
-    if (es.some(e => e.isIntersecting) && !played) { played = true; io.disconnect(); if (!timer && scene === 0) play(); }
+    if (es.some(e => e.isIntersecting) && !played) { played = true; io.disconnect(); play(); }
   }, { threshold: 0.5 });
-  io.observe($('lg-svg'));
+  io.observe($('r2-svg'));
 }
 })();
 </script>
