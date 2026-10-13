@@ -1,0 +1,9 @@
+{
+  "name": "agentwatch",
+  "version": "0.1.0",
+  "description": "Guards other agents' control files and secret stores; shows the machine's t-collusion resilience",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Ning Luo"
+  }
+}
