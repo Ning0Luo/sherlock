@@ -1,0 +1,23 @@
+{
+  "agent": {
+    "agentId": "SUP0000001",
+    "agentName": "supervisor",
+    "agentArn": "arn:aws:bedrock:us-east-1:123456789012:agent/SUP0000001",
+    "agentCollaboration": "SUPERVISOR",
+    "agentResourceRoleArn": "arn:aws:iam::123456789012:role/service-role/AmazonBedrockExecutionRoleForAgents_supervisor",
+    "agentStatus": "PREPARED",
+    "agentVersion": "DRAFT",
+    "foundationModel": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+    "instruction": "You are a customer-support supervisor. Route each request to the researcher and the assistant, then summarize their replies for the customer.",
+    "guardrailConfiguration": {
+      "guardrailIdentifier": "gr-support-pii",
+      "guardrailVersion": "2"
+    },
+    "memoryConfiguration": {
+      "enabledMemoryTypes": ["SESSION_SUMMARY"],
+      "storageDays": 30,
+      "sessionSummaryConfiguration": {"maxRecentSessions": 20}
+    },
+    "idleSessionTTLInSeconds": 600
+  }
+}

@@ -1,0 +1,10 @@
+# Rules for examples/llamastack/deployment.yaml
+policy "Customer PII never leaves the deployment"
+  never customer_pii -> internet
+
+policy "Web content never acts through the CRM account"
+  never attacker -> acct:crm.example.com
+
+policy "The publisher is never steered"
+  never hijack publisher
+  tolerate 0 agents, any approvals

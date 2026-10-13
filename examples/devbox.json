@@ -1,0 +1,25 @@
+{
+  "agents": {
+    "browser":  { "read": ["web", "downloads/*"], "write": ["downloads/*", "net:search"] },
+    "coder":    { "read": ["repo/*", "downloads/*", "home/.ssh"], "write": ["repo/*"] },
+    "reviewer": { "read": ["repo/*"], "write": ["net:pr_comment"] },
+    "deployer": { "read": ["repo/src", "home/.aws"], "write": ["prod"],
+                  "injectable": false, "flows": [["repo/src", "prod"]] }
+  },
+  "resources": {
+    "web":            { "untrusted": true },
+    "downloads/page": {},
+    "repo/src":       {},
+    "repo/CLAUDE.md": { "controls": ["coder", "reviewer"] },
+    "home/.ssh":      { "labels": ["ssh_key"] },
+    "home/.aws":      { "labels": ["aws_creds"] },
+    "net:search":     { "sink": true },
+    "net:pr_comment": { "sink": true },
+    "prod":           { "protected": true }
+  },
+  "policies": [
+    { "name": "ssh key never leaves machine",  "kind": "no_flow", "label": "ssh_key" },
+    { "name": "aws creds never leave machine", "kind": "no_flow", "label": "aws_creds" },
+    { "name": "prod integrity",                "kind": "integrity", "resource": "prod" }
+  ]
+}

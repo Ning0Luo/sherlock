@@ -1,0 +1,13 @@
+{
+  "_comment": "SUPPLEMENTAL, not a Bedrock API output. Bedrock's agent config does not record what an action group's Lambda may touch (that lives in the Lambda's IAM role), so each action group's effect on resources is declared here. Keys are <agentName>/<actionGroup> or <agentName>/<actionGroup>/<function>. See bedrock.py.",
+  "stores": {
+    "store:customer_db": {"labels": ["customer_pii"]},
+    "store:billing_db": {"labels": ["customer_pii", "payment_card"]}
+  },
+  "actionGroups": {
+    "researcher/lookup_customer": {"reads": ["store:customer_db"], "writes": []},
+    "assistant/comms": {"reads": [], "writes": ["sink:ses"]},
+    "assistant/account_actions/issue_refund": {"reads": ["store:billing_db"], "writes": ["acct:api.payments.example.com"]},
+    "assistant/account_actions/close_account": {"reads": [], "writes": ["acct:api.payments.example.com"]}
+  }
+}

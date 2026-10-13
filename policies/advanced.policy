@@ -1,0 +1,67 @@
+# Advanced safety policies for the agents on this Mac.
+#   python3 agentcheck.py check policies/advanced.policy --scan
+#   python3 agentcheck.py collude policies/advanced.policy --config examples/mac_least_privilege.json
+
+attacker controls web
+
+# --- names -------------------------------------------------------------
+secret codex_token = ctl:codex                 # ~/.codex, which holds auth.json (Codex login token)
+secret drafts      = cowork                    # Cowork folder (~/Documents/Claude): private drafts
+
+group cloud       = aws, docker
+group credentials = ssh, cloud, codex_token
+group ai_coders   = claude_code, codex, cursor
+group brains      = instructions(claude_code), instructions(codex), instructions(cursor)
+group configs     = settings(claude_code), settings(codex), settings(cursor), settings(claude_desktop)
+
+# --- 1. Separation of duties ---------------------------------------------
+# Credentials stay home even if the attacker fully owns ANY one agent.
+policy "No single compromised agent can exfiltrate credentials"
+  never credentials -> internet
+  tolerate 1 agent, 0 approvals
+
+# --- 2. Two-key rule for cloud -------------------------------------------
+# Leaking cloud keys must need both a compromised agent AND my mistake;
+# neither alone is enough.
+policy "Cloud keys need an insider plus my mistake"
+  never cloud -> internet
+  tolerate 1 agent, 0 approvals
+
+policy "Cloud keys survive one careless approval"
+  never cloud -> internet
+  tolerate 0 agents, 1 approval
+
+# --- 3. Need-to-know -----------------------------------------------------
+# Each credential is visible only to the agent that needs it.
+policy "Only Codex may ever hold the Codex token"
+  never codex_token -> internet, claude_code, cursor, claude_desktop
+
+policy "Coding agents never see cloud credentials"
+  never cloud -> ai_coders
+  tolerate 0 agents, 1 approval
+
+# --- 4. Integrity of every agent's 'brain' -------------------------------
+# Web content must not reach any file that steers a coding agent, and must
+# not reach any agent's own configuration, however many prompts I approve.
+policy "The web cannot steer any coding agent"
+  never attacker -> brains
+  tolerate 0 agents, 0 approvals
+
+policy "The web cannot rewrite agent configuration, whatever I approve"
+  never attacker -> configs
+  tolerate 0 agents, any approvals
+
+# --- 5. Containment -------------------------------------------------------
+# A web attacker alone must not turn any agent against me, and must not
+# reach the shell startup files that every agent runs.
+policy "No agent is turned without an insider"
+  never hijack agents
+  never attacker -> shell_rc
+  tolerate 0 agents, 0 approvals
+
+# --- 6. Private research -------------------------------------------------
+# Drafts in the Cowork folder never leave and are never read by the coding
+# agents, even if one agent is compromised and I approve one prompt.
+policy "Research drafts stay private under a strong attacker"
+  never drafts -> internet, ai_coders
+  tolerate 1 agent, 1 approval

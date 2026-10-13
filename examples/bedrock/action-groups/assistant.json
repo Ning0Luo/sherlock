@@ -1,0 +1,50 @@
+{
+  "agentId": "AST0000003",
+  "actionGroups": [
+    {
+      "actionGroupName": "comms",
+      "actionGroupState": "ENABLED",
+      "actionGroupExecutor": {
+        "lambda": "arn:aws:lambda:us-east-1:123456789012:function:comms"
+      },
+      "functionSchema": {
+        "functions": [
+          {
+            "name": "send_email",
+            "description": "Email the customer through Amazon SES.",
+            "requireConfirmation": "DISABLED",
+            "parameters": {
+              "to": {"type": "string", "required": true, "description": "recipient address"},
+              "body": {"type": "string", "required": true, "description": "message body"}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "actionGroupName": "account_actions",
+      "actionGroupState": "ENABLED",
+      "actionGroupExecutor": {
+        "lambda": "arn:aws:lambda:us-east-1:123456789012:function:account-actions"
+      },
+      "functionSchema": {
+        "functions": [
+          {
+            "name": "issue_refund",
+            "description": "Issue a refund through the payments provider.",
+            "requireConfirmation": "ENABLED",
+            "parameters": {
+              "amount": {"type": "number", "required": true, "description": "refund amount"}
+            }
+          },
+          {
+            "name": "close_account",
+            "description": "Close the customer's account at the payments provider.",
+            "requireConfirmation": "ENABLED",
+            "parameters": {}
+          }
+        ]
+      }
+    }
+  ]
+}

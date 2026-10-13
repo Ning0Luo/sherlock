@@ -1,0 +1,17 @@
+# Rules for examples/openshell/fleet.yaml
+policy "The coder's SSH key never leaves the fleet"
+  never ssh_key -> internet
+
+policy "Web content never ships to production"
+  never attacker -> svc:api.internal.example.com
+  tolerate 0 agents, 1 approval
+
+policy "Web content never acts through your GitHub account"
+  never attacker -> acct:api.github.com
+
+policy "The researcher never sees the SSH key"
+  never ssh_key -> researcher
+
+policy "The deploy job is never steered"
+  never hijack deployer
+  tolerate 0 agents, any approvals

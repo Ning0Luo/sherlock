@@ -1,0 +1,41 @@
+# A small Llama Stack deployment: two agents behind one stack.
+#
+#   assistant  an LLM that answers from a curated PII store and drafts reports
+#   publisher  a fixed step that posts the report to the CRM over MCP
+#
+# Each agent stays inside its own config. The question Sherlock asks is what
+# they can do together: the assistant can read the customer PII, the publisher
+# is the only one that can reach the outside -- so a report the assistant drafts
+# is one hop from leaving. The publisher's output shield (Llama Guard) is the
+# thing standing in the way; shield_whatif shows exactly what it is worth.
+
+toolgroups:
+  - {toolgroup_id: "builtin::rag", provider_id: rag-runtime}
+  - toolgroup_id: "mcp::crm"                 # a remote tool group served over MCP
+    provider_id: model-context-protocol
+    mcp_endpoint: {uri: "https://crm.example.com/sse"}
+    requires_auth: true                      # posts carry the workspace's CRM credential
+
+shields:
+  - {shield_id: prompt_guard, provider_id: prompt-guard}
+  - {shield_id: llama_guard,  provider_id: llama-guard}
+
+vector_dbs:
+  - {vector_db_id: pii_store, label: customer_pii, untrusted: false}   # curated: not attacker-ingestible
+  - {vector_db_id: reports}                  # drafts; ingestible, so untrusted
+
+agents:
+  assistant:
+    model: meta-llama/Llama-3.1-8B-Instruct
+    instructions: "Answer from the customer store and draft a report."
+    toolgroups:
+      - {name: "builtin::rag", args: {vector_db_ids: [pii_store, reports]}}
+    enable_session_persistence: true
+
+  publisher:
+    instructions: "Post the drafted report to the CRM."
+    deterministic: true                      # a fixed, non-LLM step
+    toolgroups:
+      - {name: "builtin::rag", args: {vector_db_ids: [reports]}}
+      - "mcp::crm"
+    output_shields: [llama_guard]            # Llama Guard screens what it posts

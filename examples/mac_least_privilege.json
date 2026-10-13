@@ -1,0 +1,208 @@
+{
+  "agents": {
+    "claude_code": {
+      "read": [
+        "cowork",
+        "ctl:claude_code",
+        "ctl:claude_desktop",
+        "ctl:codex",
+        "ctl:cursor",
+        "proj:instructions",
+        "proj:src",
+        "shell_rc"
+      ],
+      "write": [
+        "proj:src",
+        "proj:instructions",
+        "net:allowlist"
+      ],
+      "injectable": true,
+      "ask": {
+        "web": {
+          "read": [
+            "web"
+          ],
+          "write": [
+            "net"
+          ]
+        }
+      }
+    },
+    "claude_desktop": {
+      "read": [
+        "cowork",
+        "web"
+      ],
+      "write": [
+        "cowork",
+        "net"
+      ],
+      "injectable": true,
+      "ask": {
+        "mcp": {
+          "read": [
+            "proj:*",
+            "proj:instructions"
+          ],
+          "write": []
+        }
+      }
+    },
+    "codex": {
+      "read": [
+        "cowork",
+        "ctl:claude_code",
+        "ctl:claude_desktop",
+        "ctl:codex",
+        "ctl:cursor",
+        "proj:instructions",
+        "proj:src",
+        "secret:aws",
+        "secret:browser",
+        "secret:docker",
+        "secret:ssh",
+        "shell_rc"
+      ],
+      "write": [
+        "proj:*",
+        "proj:instructions"
+      ],
+      "injectable": true,
+      "ask": {
+        "escalate": {
+          "read": [],
+          "write": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "net",
+            "net:allowlist",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ]
+        }
+      }
+    },
+    "cursor": {
+      "read": [
+        "proj:*",
+        "proj:instructions",
+        "web"
+      ],
+      "write": [
+        "proj:*",
+        "proj:instructions"
+      ],
+      "injectable": true,
+      "ask": {
+        "terminal": {
+          "read": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ],
+          "write": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "net",
+            "net:allowlist",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ]
+        }
+      }
+    }
+  },
+  "resources": {
+    "cowork": {},
+    "ctl:claude_code": {
+      "controls": [
+        "claude_code"
+      ]
+    },
+    "ctl:claude_desktop": {
+      "controls": [
+        "claude_desktop"
+      ]
+    },
+    "ctl:codex": {
+      "controls": [
+        "codex"
+      ]
+    },
+    "ctl:cursor": {
+      "controls": [
+        "cursor"
+      ]
+    },
+    "net": {
+      "sink": true
+    },
+    "net:allowlist": {
+      "sink": true
+    },
+    "proj:instructions": {
+      "controls": [
+        "claude_code",
+        "codex",
+        "cursor"
+      ]
+    },
+    "proj:src": {},
+    "secret:aws": {
+      "labels": [
+        "aws_creds"
+      ]
+    },
+    "secret:browser": {
+      "labels": [
+        "browser_sessions"
+      ]
+    },
+    "secret:docker": {
+      "labels": [
+        "docker_creds"
+      ]
+    },
+    "secret:ssh": {
+      "labels": [
+        "ssh_key"
+      ]
+    },
+    "shell_rc": {
+      "controls": [
+        "claude_code",
+        "codex",
+        "cursor"
+      ]
+    },
+    "web": {
+      "untrusted": true
+    }
+  },
+  "_comment": "Your scanned Mac with least-privilege changes: Codex browser/computer-use plugins off; Claude Code sandboxed (no secret reads, writes project, network allowlist only)."
+}

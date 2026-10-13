@@ -1,0 +1,6 @@
+# Rules for examples/conditions/home.json
+policy "The SSH key never leaves"
+  never ssh -> internet
+
+policy "Web content never steers the reviewer"
+  never hijack reviewer

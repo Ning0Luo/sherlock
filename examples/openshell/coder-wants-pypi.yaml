@@ -1,0 +1,11 @@
+version: 1
+network_policies:
+  pypi:
+    endpoints:
+      - host: pypi.org
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+    binaries:
+      - path: /usr/bin/pip

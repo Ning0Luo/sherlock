@@ -1,0 +1,62 @@
+{
+  "_comment": "The assistant can no longer edit the sync job's config.",
+  "agents": {
+    "assistant": {
+      "read": [
+        "web",
+        "notes"
+      ],
+      "write": [
+        "notes"
+      ]
+    },
+    "reader": {
+      "read": [
+        "notes",
+        "docs",
+        "home/.ssh"
+      ],
+      "write": [
+        "docs"
+      ]
+    },
+    "sync": {
+      "read": [
+        "photos",
+        "home/.ssh"
+      ],
+      "write": [
+        "net:backup"
+      ],
+      "injectable": false,
+      "flows": [
+        [
+          "photos",
+          "net:backup"
+        ]
+      ]
+    }
+  },
+  "resources": {
+    "web": {
+      "untrusted": true
+    },
+    "notes": {},
+    "docs": {},
+    "photos": {},
+    "home/.ssh": {
+      "labels": [
+        "ssh_key"
+      ]
+    },
+    "net:backup": {
+      "sink": true
+    },
+    "cfg/sync": {
+      "controls": [
+        "sync"
+      ],
+      "access": true
+    }
+  }
+}

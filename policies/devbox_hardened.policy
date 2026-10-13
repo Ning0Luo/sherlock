@@ -1,0 +1,15 @@
+attacker controls web
+
+policy "SSH key never leaves, even if one agent is compromised"
+  never ssh -> internet
+  tolerate 1 agent
+
+policy "AWS keys never leave, whatever the agents do"
+  never aws -> internet
+  tolerate any agents
+
+policy "Web content never reaches production"
+  never attacker -> prod
+
+policy "No LLM agent ever sees cloud credentials"
+  never aws -> coder, reviewer, browser

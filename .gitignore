@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# Generated solver output and proof directories (agentcheck formula/--proofs)
+out/
+*.drat
+*.drat.cnf
+*.cnf.names
+*.cnf.readable.txt
+
+# LaTeX build artifacts (keep main.tex and refs.bib)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/*.synctex.gz
+
+# Benchmark logs
+bench/*.log
+bench/realworld/run.log

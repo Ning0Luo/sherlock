@@ -1,0 +1,24 @@
+{
+  "agentId": "RES0000002",
+  "actionGroups": [
+    {
+      "actionGroupName": "lookup_customer",
+      "actionGroupState": "ENABLED",
+      "actionGroupExecutor": {
+        "lambda": "arn:aws:lambda:us-east-1:123456789012:function:lookup-customer"
+      },
+      "functionSchema": {
+        "functions": [
+          {
+            "name": "get_profile",
+            "description": "Fetch a customer's stored profile from the customer database.",
+            "requireConfirmation": "DISABLED",
+            "parameters": {
+              "customer_id": {"type": "string", "required": true, "description": "the customer id"}
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "knowledgeBase": {
+    "knowledgeBaseId": "KB00000001",
+    "name": "support_wiki",
+    "status": "ACTIVE"
+  },
+  "dataSources": [
+    {
+      "dataSourceId": "DS00000001",
+      "name": "public-docs-crawler",
+      "dataSourceConfiguration": {
+        "type": "WEB",
+        "webConfiguration": {
+          "sourceConfiguration": {
+            "urlConfiguration": {
+              "seedUrls": [{"url": "https://docs.example.com/"}]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "_comment": "Three agents, each within Meta's Rule of Two on its own rights. Together they leak the CRM export and change the billing system.",
+  "agents": {
+    "triage":    { "read": ["inbox", "notes/*"], "write": ["notes/*"] },
+    "analyst":   { "read": ["notes/*", "crm/export"], "write": ["drafts/*"] },
+    "sender":    { "read": ["drafts/*"], "write": ["net:email", "billing"],
+                   "ask": { "send_external": { "write": ["net:partner_api"] } } },
+    "backup":    { "read": ["crm/export"], "write": ["vault"], "injectable": false,
+                   "flows": [["crm/export", "vault"]] }
+  },
+  "resources": {
+    "inbox":           { "untrusted": true },
+    "notes/today":     {},
+    "crm/export":      { "labels": ["customer_pii"] },
+    "drafts/reply":    {},
+    "vault":           {},
+    "net:email":       { "sink": true },
+    "net:partner_api": { "sink": true },
+    "billing":         { "protected": true }
+  }
+}

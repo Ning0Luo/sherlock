@@ -1,0 +1,31 @@
+{
+  "_comment": "devbox, hardened: coder no longer reads downloads or holds the SSH key; a non-LLM git_signer holds the key and only pushes; CLAUDE.md is read-only to agents; prod deploys only from a release branch written by a non-LLM CI gate (flows [] = the gate blocks attacker influence, e.g. human approval).",
+  "agents": {
+    "browser":    { "read": ["web", "downloads/*"], "write": ["downloads/*", "net:search"] },
+    "coder":      { "read": ["repo/src", "repo/CLAUDE.md"], "write": ["repo/src"] },
+    "reviewer":   { "read": ["repo/src", "repo/CLAUDE.md"], "write": ["net:pr_comment"] },
+    "git_signer": { "read": ["repo/src", "home/.ssh"], "write": ["net:git_push"],
+                    "injectable": false, "flows": [["repo/src", "net:git_push"]] },
+    "ci_gate":    { "read": ["repo/src"], "write": ["repo/release"], "injectable": false },
+    "deployer":   { "read": ["repo/release", "home/.aws"], "write": ["prod"],
+                    "injectable": false, "flows": [["repo/release", "prod"]] }
+  },
+  "resources": {
+    "web":            { "untrusted": true },
+    "downloads/page": {},
+    "repo/src":       {},
+    "repo/release":   {},
+    "repo/CLAUDE.md": { "controls": ["coder", "reviewer"] },
+    "home/.ssh":      { "labels": ["ssh_key"] },
+    "home/.aws":      { "labels": ["aws_creds"] },
+    "net:search":     { "sink": true },
+    "net:pr_comment": { "sink": true },
+    "net:git_push":   { "sink": true },
+    "prod":           { "protected": true }
+  },
+  "policies": [
+    { "name": "ssh key never leaves machine",  "kind": "no_flow", "label": "ssh_key" },
+    { "name": "aws creds never leave machine", "kind": "no_flow", "label": "aws_creds" },
+    { "name": "prod integrity",                "kind": "integrity", "resource": "prod" }
+  ]
+}

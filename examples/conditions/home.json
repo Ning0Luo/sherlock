@@ -1,0 +1,17 @@
+{
+  "_comment": "Two agents the scan could read and one it could not (helper: every right is an open question), plus one assumed right (the coder's MCP server may or may not fetch web pages).",
+  "agents": {
+    "coder":    { "read": ["repo", "home/.ssh", "web"], "write": ["repo"],
+                  "maybe": { "read": ["web"] } },
+    "reviewer": { "read": ["repo"], "write": ["net:pr"] },
+    "helper":   { "read": ["*"], "write": ["repo", "notes", "net:chat"], "unknown": true }
+  },
+  "resources": {
+    "web":       { "untrusted": true },
+    "repo":      {},
+    "notes":     {},
+    "home/.ssh": { "labels": ["ssh_key"] },
+    "net:pr":    { "sink": true },
+    "net:chat":  { "sink": true }
+  }
+}

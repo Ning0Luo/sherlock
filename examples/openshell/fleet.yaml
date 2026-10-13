@@ -1,0 +1,21 @@
+# Three OpenShell sandboxes that share a workspace volume.
+# Each policy is tight on its own; the question is what they can do together.
+sandboxes:
+  researcher:
+    policy: researcher.yaml          # reads papers and docs, takes notes
+  coder:
+    policy: coder.yaml               # writes code, pushes to GitHub as you
+    proposals: [coder-wants-pypi.yaml]   # pending policy-advisor proposal
+  deployer:
+    policy: deployer.yaml            # a fixed CI job, not an AI model
+    ai: false
+    relays: [[/workspace/build, api.internal.example.com]]
+
+shared:
+  - name: workspace
+    mounts: {researcher: /workspace, coder: /workspace, deployer: /workspace}
+
+secrets:
+  - {sandbox: coder, path: /home/sandbox/.ssh, label: ssh_key}
+
+internal_hosts: [api.internal.example.com]

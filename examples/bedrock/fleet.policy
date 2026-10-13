@@ -1,0 +1,19 @@
+# Rules for examples/bedrock: a Bedrock multi-agent customer-support deployment
+# (a supervisor routing to a researcher and an assistant).
+
+policy "Customer PII never leaves the deployment"
+  never customer_pii -> internet
+
+policy "Card data never leaves, even with one confirmation"
+  never payment_card -> internet
+  tolerate 0 agents, 1 approval
+
+policy "Web content never acts through the payments account"
+  never attacker -> acct:api.payments.example.com
+
+policy "Web content reaches payments only behind a confirmation"
+  never attacker -> acct:api.payments.example.com
+  tolerate 0 agents, 1 approval
+
+policy "The supervisor's session memory is never attacker-controlled"
+  never attacker -> mem:supervisor

@@ -1,0 +1,22 @@
+{
+  "agentId": "SUP0000001",
+  "agentCollaborators": [
+    {
+      "collaboratorId": "CLB0000001",
+      "collaboratorName": "researcher",
+      "agentDescriptor": {
+        "aliasArn": "arn:aws:bedrock:us-east-1:123456789012:agent-alias/RES0000002/ALIASAAAA1"
+      },
+      "collaborationInstruction": "Use for product questions and customer profile lookups.",
+      "relayConversationHistory": "TO_COLLABORATOR"
+    },
+    {
+      "collaboratorId": "CLB0000002",
+      "collaboratorName": "assistant",
+      "agentDescriptor": {
+        "aliasArn": "arn:aws:bedrock:us-east-1:123456789012:agent-alias/AST0000003/ALIASBBBB2"
+      },
+      "collaborationInstruction": "Use to email the customer or to act on their account."
+    }
+  ]
+}

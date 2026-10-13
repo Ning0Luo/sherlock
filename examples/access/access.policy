@@ -1,0 +1,6 @@
+# Rules for examples/access/*.json
+policy "The SSH key never leaves"
+  never ssh -> internet
+
+policy "Web content never reconfigures the sync job"
+  never attacker -> cfg/sync

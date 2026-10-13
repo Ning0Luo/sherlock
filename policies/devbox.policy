@@ -1,0 +1,24 @@
+# Policies for examples/devbox.json (browser, coder, reviewer, deployer)
+# Each rule now also tolerates one prompt injection: it must still hold even if
+# the attacker fools one agent. An attack that needs a 2-hop injection chain is
+# then accepted as unlikely; one reachable with a single injection (or a real
+# agent compromise) still fails.
+attacker controls web
+
+group creds = ssh, aws
+
+policy "Credentials never leave the machine"
+  never creds -> internet
+  tolerate 1 agent, 0 approvals, 1 injection
+
+policy "The reviewer never sees the SSH key"
+  never ssh -> reviewer
+  tolerate 0 agents, 0 approvals, 1 injection
+
+policy "Web content never reaches production"
+  never attacker -> prod
+  tolerate 0 agents, any approvals, 1 injection
+
+policy "The coder is never steered by the attacker"
+  never hijack coder
+  tolerate 0 agents, 0 approvals, 1 injection

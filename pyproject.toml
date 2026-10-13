@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sherlock-agentcheck"
+version = "0.1.0"
+description = "Sherlock/agentcheck: a static multi-agent collusion checker (LangGraph, Bedrock, Strands, Llama Stack, OpenShell)"
+readme = "README.md"
+requires-python = ">=3.9"
+# The core is standard-library only; it reads the agent framework you already have.
+dependencies = []
+
+[project.optional-dependencies]
+# Only needed to run check() on a real LangGraph app; a LangGraph user already has these.
+langgraph = ["langgraph", "langchain-core"]
+
+[project.scripts]
+agentcheck = "agentcheck:main"
+
+[tool.setuptools]
+py-modules = ["agentcheck", "collusion", "sat", "policy", "ruleoftwo", "synth",
+              "openshell", "miniyaml", "bedrock", "llamastack", "shield_whatif", "drat_check"]
+
+[tool.setuptools.packages.find]
+include = ["integrations*", "validate*"]

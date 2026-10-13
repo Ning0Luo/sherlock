@@ -1,0 +1,67 @@
+{
+  "_comment": "Someone gives the reader a Slack tool.",
+  "agents": {
+    "assistant": {
+      "read": [
+        "web",
+        "notes"
+      ],
+      "write": [
+        "notes",
+        "cfg/sync"
+      ]
+    },
+    "reader": {
+      "read": [
+        "notes",
+        "docs",
+        "home/.ssh"
+      ],
+      "write": [
+        "docs",
+        "net:slack"
+      ]
+    },
+    "sync": {
+      "read": [
+        "photos",
+        "home/.ssh"
+      ],
+      "write": [
+        "net:backup"
+      ],
+      "injectable": false,
+      "flows": [
+        [
+          "photos",
+          "net:backup"
+        ]
+      ]
+    }
+  },
+  "resources": {
+    "web": {
+      "untrusted": true
+    },
+    "notes": {},
+    "docs": {},
+    "photos": {},
+    "home/.ssh": {
+      "labels": [
+        "ssh_key"
+      ]
+    },
+    "net:backup": {
+      "sink": true
+    },
+    "cfg/sync": {
+      "controls": [
+        "sync"
+      ],
+      "access": true
+    },
+    "net:slack": {
+      "sink": true
+    }
+  }
+}

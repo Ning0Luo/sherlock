@@ -1,0 +1,163 @@
+{
+  "agents": {
+    "codex": {
+      "read": [
+        "proj:instructions",
+        "proj:src",
+        "shell_rc",
+        "ctl:codex"
+      ],
+      "write": [
+        "proj:src"
+      ],
+      "injectable": true,
+      "ask": {
+        "instructions": {
+          "write": [
+            "proj:instructions"
+          ]
+        }
+      }
+    },
+    "claude_code": {
+      "read": [
+        "proj:src",
+        "proj:instructions",
+        "ctl:claude_code"
+      ],
+      "write": [
+        "proj:src"
+      ],
+      "injectable": true,
+      "ask": {
+        "instructions": {
+          "write": [
+            "proj:instructions"
+          ]
+        },
+        "web": {
+          "read": [
+            "web"
+          ],
+          "write": [
+            "net"
+          ]
+        },
+        "push": {
+          "write": [
+            "net:allowlist"
+          ]
+        }
+      }
+    },
+    "cursor": {
+      "read": [
+        "proj:src",
+        "proj:instructions",
+        "ctl:cursor"
+      ],
+      "write": [
+        "proj:src"
+      ],
+      "injectable": true,
+      "ask": {
+        "terminal": {
+          "read": [
+            "proj:src"
+          ],
+          "write": [
+            "proj:src"
+          ]
+        }
+      }
+    },
+    "claude_desktop": {
+      "read": [
+        "cowork",
+        "ctl:claude_desktop"
+      ],
+      "write": [
+        "cowork"
+      ],
+      "injectable": true,
+      "ask": {
+        "web": {
+          "read": [
+            "web"
+          ],
+          "write": [
+            "net"
+          ]
+        }
+      }
+    }
+  },
+  "resources": {
+    "cowork": {},
+    "ctl:claude_code": {
+      "controls": [
+        "claude_code"
+      ]
+    },
+    "ctl:claude_desktop": {
+      "controls": [
+        "claude_desktop"
+      ]
+    },
+    "ctl:codex": {
+      "controls": [
+        "codex"
+      ]
+    },
+    "ctl:cursor": {
+      "controls": [
+        "cursor"
+      ]
+    },
+    "net": {
+      "sink": true
+    },
+    "net:allowlist": {
+      "sink": true
+    },
+    "proj:instructions": {
+      "controls": [
+        "claude_code",
+        "codex",
+        "cursor"
+      ]
+    },
+    "proj:src": {},
+    "secret:aws": {
+      "labels": [
+        "aws_creds"
+      ]
+    },
+    "secret:browser": {
+      "labels": [
+        "browser_sessions"
+      ]
+    },
+    "secret:docker": {
+      "labels": [
+        "docker_creds"
+      ]
+    },
+    "secret:ssh": {
+      "labels": [
+        "ssh_key"
+      ]
+    },
+    "shell_rc": {
+      "controls": [
+        "claude_code",
+        "codex",
+        "cursor"
+      ]
+    },
+    "web": {
+      "untrusted": true
+    }
+  },
+  "_comment": "Hardened: no agent reads secret stores or other agents' folders; Codex escalation off; instruction files and pushes need approval; web access asks; Cursor terminal confined to the project; the Cowork folder belongs to Claude desktop only."
+}

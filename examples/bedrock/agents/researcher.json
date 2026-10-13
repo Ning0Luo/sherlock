@@ -1,0 +1,14 @@
+{
+  "agent": {
+    "agentId": "RES0000002",
+    "agentName": "researcher",
+    "agentArn": "arn:aws:bedrock:us-east-1:123456789012:agent/RES0000002",
+    "agentCollaboration": "DISABLED",
+    "agentResourceRoleArn": "arn:aws:iam::123456789012:role/service-role/AmazonBedrockExecutionRoleForAgents_researcher",
+    "agentStatus": "PREPARED",
+    "agentVersion": "DRAFT",
+    "foundationModel": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+    "instruction": "Answer product questions from the support wiki, and look up the customer's stored profile when the question needs it.",
+    "idleSessionTTLInSeconds": 600
+  }
+}

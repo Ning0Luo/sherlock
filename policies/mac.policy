@@ -1,0 +1,27 @@
+# Safety policies for the agents on this Mac. Check with:
+#   python3 agentcheck.py check policies/mac.policy --scan
+attacker controls web
+
+group cloud = aws, docker
+
+policy "SSH key never leaves without my OK"
+  never ssh -> internet
+  tolerate 0 agents, 0 approvals
+
+policy "Cloud credentials never leave, even with one approval mistake"
+  never cloud -> internet
+  tolerate 0 agents, 1 approval
+
+policy "Browser sessions stay private"
+  never browser -> internet
+
+policy "No agent can rewrite another agent's settings"
+  never attacker -> settings(claude_code), settings(codex), settings(cursor)
+  tolerate 0 agents, 0 approvals
+
+policy "Claude desktop chat never sees my SSH key"
+  never ssh -> claude_desktop
+
+policy "Web content never steers Claude Code through shared project files"
+  never attacker -> instructions(claude_code)
+  tolerate 0 agents, any approvals

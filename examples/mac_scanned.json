@@ -1,0 +1,277 @@
+{
+  "agents": {
+    "claude_code": {
+      "read": [
+        "ctl:claude_code",
+        "proj:*",
+        "proj:instructions"
+      ],
+      "write": [],
+      "injectable": true,
+      "ask": {
+        "edit": {
+          "read": [],
+          "write": [
+            "proj:*",
+            "proj:instructions"
+          ]
+        },
+        "shell": {
+          "read": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ],
+          "write": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "net",
+            "net:allowlist",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ]
+        },
+        "web": {
+          "read": [
+            "web"
+          ],
+          "write": [
+            "net"
+          ]
+        },
+        "read_outside": {
+          "read": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ],
+          "write": []
+        }
+      }
+    },
+    "claude_desktop": {
+      "read": [
+        "cowork",
+        "web"
+      ],
+      "write": [
+        "cowork",
+        "net"
+      ],
+      "injectable": true,
+      "ask": {
+        "mcp": {
+          "read": [
+            "proj:*",
+            "proj:instructions"
+          ],
+          "write": []
+        }
+      }
+    },
+    "codex": {
+      "read": [
+        "cowork",
+        "ctl:claude_code",
+        "ctl:claude_desktop",
+        "ctl:codex",
+        "ctl:cursor",
+        "proj:instructions",
+        "proj:src",
+        "secret:aws",
+        "secret:browser",
+        "secret:docker",
+        "secret:ssh",
+        "shell_rc",
+        "web"
+      ],
+      "write": [
+        "net",
+        "proj:*",
+        "proj:instructions"
+      ],
+      "injectable": true,
+      "ask": {
+        "escalate": {
+          "read": [],
+          "write": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "net",
+            "net:allowlist",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ]
+        },
+        "computer_use": {
+          "read": [
+            "web"
+          ],
+          "write": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "net",
+            "net:allowlist",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ]
+        }
+      }
+    },
+    "cursor": {
+      "read": [
+        "proj:*",
+        "proj:instructions",
+        "web"
+      ],
+      "write": [
+        "proj:*",
+        "proj:instructions"
+      ],
+      "injectable": true,
+      "ask": {
+        "terminal": {
+          "read": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ],
+          "write": [
+            "cowork",
+            "ctl:claude_code",
+            "ctl:claude_desktop",
+            "ctl:codex",
+            "ctl:cursor",
+            "net",
+            "net:allowlist",
+            "proj:instructions",
+            "proj:src",
+            "secret:aws",
+            "secret:browser",
+            "secret:docker",
+            "secret:ssh",
+            "shell_rc"
+          ]
+        }
+      }
+    }
+  },
+  "resources": {
+    "cowork": {},
+    "ctl:claude_code": {
+      "controls": [
+        "claude_code"
+      ]
+    },
+    "ctl:claude_desktop": {
+      "controls": [
+        "claude_desktop"
+      ]
+    },
+    "ctl:codex": {
+      "controls": [
+        "codex"
+      ]
+    },
+    "ctl:cursor": {
+      "controls": [
+        "cursor"
+      ]
+    },
+    "net": {
+      "sink": true
+    },
+    "net:allowlist": {
+      "sink": true
+    },
+    "proj:instructions": {
+      "controls": [
+        "claude_code",
+        "codex",
+        "cursor"
+      ]
+    },
+    "proj:src": {},
+    "secret:aws": {
+      "labels": [
+        "aws_creds"
+      ]
+    },
+    "secret:browser": {
+      "labels": [
+        "browser_sessions"
+      ]
+    },
+    "secret:docker": {
+      "labels": [
+        "docker_creds"
+      ]
+    },
+    "secret:ssh": {
+      "labels": [
+        "ssh_key"
+      ]
+    },
+    "shell_rc": {
+      "controls": [
+        "claude_code",
+        "codex",
+        "cursor"
+      ]
+    },
+    "web": {
+      "untrusted": true
+    }
+  }
+}

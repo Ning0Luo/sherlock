@@ -1,0 +1,6 @@
+{
+  "agentId": "RES0000002",
+  "agentKnowledgeBases": [
+    {"knowledgeBaseId": "KB00000001", "knowledgeBaseState": "ENABLED"}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "agent": {
+    "agentId": "AST0000003",
+    "agentName": "assistant",
+    "agentArn": "arn:aws:bedrock:us-east-1:123456789012:agent/AST0000003",
+    "agentCollaboration": "DISABLED",
+    "agentResourceRoleArn": "arn:aws:iam::123456789012:role/service-role/AmazonBedrockExecutionRoleForAgents_assistant",
+    "agentStatus": "PREPARED",
+    "agentVersion": "DRAFT",
+    "foundationModel": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+    "instruction": "Email the customer through SES, and carry out account actions such as refunds or closures when asked.",
+    "idleSessionTTLInSeconds": 600
+  }
+}

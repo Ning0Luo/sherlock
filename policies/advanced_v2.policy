@@ -1,0 +1,61 @@
+# advanced.policy, revised after review. Changes are noted per policy.
+attacker controls web
+
+secret codex_token = ctl:codex     # ~/.codex holds auth.json; see policy 4 note
+secret drafts      = cowork        # ~/Documents/Claude
+
+group cloud      = aws, docker
+group ai_coders  = claude_code, codex, cursor
+group brains     = instructions(claude_code), instructions(codex), instructions(cursor)
+group configs    = settings(claude_code), settings(codex), settings(cursor), settings(claude_desktop)
+
+# 1. Was: all credentials incl. the Codex token. The token's owner must use the
+#    network, so it cannot survive its owner being compromised. Now: keys that
+#    no agent needs to send anywhere.
+policy "SSH and cloud keys survive one compromised agent"
+  never ssh, cloud -> internet
+  tolerate 1 agent, 0 approvals
+
+# 2+3. Was: two policies, one redundant with 1. The two-key rule is policy 1
+#    (insider alone) plus this one (my mistake alone).
+policy "Cloud keys survive one careless approval"
+  never cloud -> internet
+  tolerate 0 agents, 1 approval
+
+# 4. Was: also "-> internet" (forbids Codex's own login). Now need-to-know
+#    only. The label covers all of ~/.codex, so this reads "no other agent can
+#    read Codex's folder".
+policy "No other agent can read Codex's folder (login token)"
+  never codex_token -> claude_code, cursor, claude_desktop
+
+# 5. Unchanged: a capability policy; failing it with no attacker means the
+#    configuration itself grants the access.
+policy "Coding agents never see cloud credentials"
+  never cloud -> ai_coders
+  tolerate 0 agents, 1 approval
+
+# 6. Unchanged.
+policy "The web cannot steer any coding agent"
+  never attacker -> brains
+
+# 7. Was: any approvals (fails for every setup that can escalate). Now: one.
+policy "The web cannot rewrite agent configuration with one approval"
+  never attacker -> configs
+  tolerate 0 agents, 1 approval
+
+# 8. Was: every agent. Agents that read the web freely count as "turned" the
+#    moment they read attacker text, so that version only said "no agent reads
+#    the web". Now: the agents with real power.
+policy "The powerful agents are never turned by the web alone"
+  never hijack claude_code, codex
+  never attacker -> shell_rc
+
+# 9. Was: drafts never leave, even if the owner (Claude desktop) is hacked.
+#    Now split: drafts never reach the coding agents (need-to-know), and never
+#    leave without an insider (owner honest).
+policy "Coding agents never see research drafts"
+  never drafts -> ai_coders
+  tolerate 0 agents, 1 approval
+
+policy "Research drafts never leave without an insider"
+  never drafts -> internet
