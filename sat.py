@@ -121,7 +121,8 @@ def encode(s: System, goal: Policy | Goal, injection: bool, t: int, h: int,
            recruit: bool = True, block: list[frozenset[str]] = (),
            free: frozenset[str] = frozenset(), k: int | None = None,
            block_free: list[frozenset[str]] = (), deny: frozenset[str] = frozenset(),
-           max_inj: int | None = None) -> Encoding:
+           max_inj: int | None = None, seed_tainted: frozenset[str] = frozenset(),
+           seed_labels: dict | None = None, seed_corrupt: frozenset[str] = frozenset()) -> Encoding:
     """free: gate ids that are not approvals but unknown rights (see synth.py); they
     do not count toward h. k bounds how many of them are on (None: no bound).
     block_free: sets of free gates; no answer may switch on all of one set.
@@ -164,12 +165,19 @@ def encode(s: System, goal: Policy | Goal, injection: bool, t: int, h: int,
     for a in A:
         if s.agents[a].trusted:
             cnf.add(-B[a])                 # the attacker cannot break into a trusted agent
-        cnf.justify(H[a, 0], [[B[a]]])
+        if a in seed_corrupt and not s.agents[a].trusted:
+            cnf.add(H[a, 0])               # already corrupted (observed); needs no hack
+        else:
+            cnf.justify(H[a, 0], [[B[a]]])
     for r in R:
-        if not (s.resources[r].untrusted and (src is None or r in src)):
+        if r in seed_tainted:
+            cnf.add(T[r, 0])               # attacker content observed here now
+        elif not (s.resources[r].untrusted and (src is None or r in src)):
             cnf.add(-T[r, 0])
         for l in labels:
-            if l not in s.resources[r].labels:
+            if r in (seed_labels or {}).get(l, ()):
+                cnf.add(S[l, r, 0])        # the secret has reached r (observed)
+            elif l not in s.resources[r].labels:
                 cnf.add(-S[l, r, 0])
 
     for i in range(N):
@@ -272,12 +280,16 @@ class Answer:
 
 def solve(s: System, goal: Policy | Goal, injection: bool, t: int, h: int,
           proof_dir: Path | None = None, recruit: bool = True,
-          block: list[frozenset[str]] = (), proof_name: str | None = None, **unknown) -> Answer:
-    """unknown: free, k, block_free, deny, passed to encode().
+          block: list[frozenset[str]] = (), proof_name: str | None = None,
+          seed_tainted: frozenset[str] = frozenset(), seed_labels: dict | None = None,
+          seed_corrupt: frozenset[str] = frozenset(), **unknown) -> Answer:
+    """unknown: free, k, block_free, deny, passed to encode(). seed_*: observed
+    runtime state (for the live monitor), passed to encode and the re-check.
     With proof_dir, an UNSAT answer leaves its DRAT proof there and, next to it as
     <proof>.cnf, the exact formula it refutes, so drat_check.py can check the pair."""
     goal = as_goal(goal)
-    enc = encode(s, goal, injection, t, h, recruit, block, **unknown)
+    enc = encode(s, goal, injection, t, h, recruit, block,
+                 seed_tainted=seed_tainted, seed_labels=seed_labels, seed_corrupt=seed_corrupt, **unknown)
     if any(len(c) == 0 for c in enc.cnf.clauses):
         return Answer(False, [], [], clauses=len(enc.cnf.clauses))
     with tempfile.TemporaryDirectory() as tmp:
@@ -314,7 +326,7 @@ def solve(s: System, goal: Policy | Goal, injection: bool, t: int, h: int,
     sel = frozenset(a for a, v in enc.I.items() if v in true)   # agents the solver injects
     # Re-check with the simulator, limited to that injection selection, for a faithful path.
     res = analyze(s, frozenset(agents), injection, frozenset(approvals), goal.sources, recruit,
-                  inject_set=sel)
+                  inject_set=sel, seed_tainted=seed_tainted, seed_labels=seed_labels, seed_corrupt=seed_corrupt)
     for atom in goal.atoms:
         target = violated(s, atom, res)
         if target is not None:

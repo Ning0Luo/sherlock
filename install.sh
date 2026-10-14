@@ -57,7 +57,7 @@ rm -rf "$DEST"
 mkdir -p "$DEST/agentwatch" "$DEST/policies" "$DEST/examples" "$DEST/tests" "$BIN"
 cp "$SRC"/collusion.py "$SRC"/sat.py "$SRC"/policy.py "$SRC"/agentcheck.py "$SRC"/drat_check.py \
    "$SRC"/ruleoftwo.py "$SRC"/openshell.py "$SRC"/miniyaml.py "$SRC"/synth.py \
-   "$SRC"/bedrock.py "$SRC"/llamastack.py "$SRC"/shield_whatif.py "$DEST/"
+   "$SRC"/bedrock.py "$SRC"/llamastack.py "$SRC"/shield_whatif.py "$SRC"/monitor.py "$DEST/"
 cp "$SRC"/agentwatch/agentwatch.py "$DEST/agentwatch/"
 mkdir -p "$DEST/validate"
 cp "$SRC"/validate/*.py "$DEST/validate/"
@@ -65,7 +65,7 @@ mkdir -p "$DEST/integrations"
 cp "$SRC"/integrations/*.py "$DEST/integrations/"
 cp "$SRC"/policies/*.policy "$DEST/policies/"
 cp "$SRC"/examples/*.json "$SRC"/examples/__init__.py "$DEST/examples/"
-for d in openshell ruleoftwo access conditions langgraph validate bedrock llamastack strands; do
+for d in openshell ruleoftwo access conditions langgraph validate bedrock llamastack strands monitor; do
   [ -d "$SRC/examples/$d" ] && cp -R "$SRC/examples/$d" "$DEST/examples/"
 done
 # only the tests that run here: test_parsers and test_trust need web/ (not installed),
@@ -102,7 +102,7 @@ if [ -n "$SOLVER" ]; then
   echo "$out" | grep -q "3/4 policies pass" || die "self-test gave an unexpected result"
   # every installed module must import (the scan, OpenShell and Rule-of-Two paths load lazily)
   (cd "$DEST" && "$PY" -c "import sys; sys.path[:0] = ['.', 'agentwatch']
-import agentwatch, openshell, ruleoftwo, synth, validate, bedrock, llamastack, shield_whatif, integrations.langgraph, integrations.strands") || die "self-test: an installed module does not import"
+import agentwatch, openshell, ruleoftwo, synth, validate, bedrock, llamastack, shield_whatif, monitor, integrations.langgraph, integrations.strands") || die "self-test: an installed module does not import"
   out="$("$BIN/agentcheck" ruleoftwo --config "$DEST/examples/ruleoftwo/inbox.json" 2>&1 || true)"
   echo "$out" | grep -q "COMPOSITION" || die "self-test: ruleoftwo gave an unexpected result"
   rc=0   # exit 1 = some policy fails, which is fine here; 2 = could not run

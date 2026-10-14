@@ -1,0 +1,172 @@
+name: 'Sherlock agentcheck'
+description: >-
+  Fail CI when a change to a multi-agent system introduces a collusion attack
+  within your budget. Checks a LangGraph, AWS Bedrock or Llama Stack config
+  against a Sherlock policy; in `diff` mode it gates on new attacks only.
+author: 'Ning0Luo'
+branding:
+  icon: 'shield'
+  color: 'orange'
+
+inputs:
+  policy:
+    description: 'Path to the Sherlock policy file (the rules to enforce).'
+    required: true
+  config:
+    description: >-
+      A sherlock-scan JSON config to check — e.g. written by
+      integrations.langgraph.export(app). Set exactly one of config / bedrock /
+      llamastack.
+    required: false
+    default: ''
+  bedrock:
+    description: 'A directory of exported AWS Bedrock JSON.'
+    required: false
+    default: ''
+  llamastack:
+    description: 'A Llama Stack run.yaml.'
+    required: false
+    default: ''
+  base:
+    description: >-
+      A git ref (e.g. the PR base SHA). When set, the action runs
+      `agentcheck diff`: it fails only on attacks this change INTRODUCES, not on
+      pre-existing ones. Requires a `--config` source and a checkout with the
+      base ref available (actions/checkout with fetch-depth: 0). Ignored for
+      bedrock / llamastack, which fall back to a full check.
+    required: false
+    default: ''
+  guard-access:
+    description: >-
+      'true' to pass --guard-access: set aside attacks that need an agent to
+      edit access settings, and only ALARM when a change brings such an attack.
+    required: false
+    default: ''
+  show-injections:
+    description: >-
+      'true' to pass --injections: report the cheapest attack as
+      (agents hacked, approvals, prompt injections). The injection *budget* is
+      set in the policy file (`tolerate N agents, M approvals, K injections`).
+    required: false
+    default: ''
+  fast:
+    description: "'true' to pass --fast: skip the cheapest-attack search on a PASS."
+    required: false
+    default: ''
+  ref:
+    description: 'The Ning0Luo/sherlock git ref to install (branch, tag or commit SHA).'
+    required: false
+    default: 'main'
+  python-version:
+    description: 'Python version to set up.'
+    required: false
+    default: '3.x'
+  working-directory:
+    description: 'Directory to resolve the policy and source paths against.'
+    required: false
+    default: '.'
+
+outputs:
+  result:
+    description: "'pass' or 'fail'."
+    value: ${{ steps.run.outputs.result }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install CaDiCaL
+      shell: bash
+      run: |
+        if ! command -v cadical >/dev/null 2>&1; then
+          if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq cadical
+          else
+            echo "::error::cadical is not installed and apt-get is unavailable. Run this action on ubuntu-latest, or install CaDiCaL yourself before this step."
+            exit 1
+          fi
+        fi
+        echo "using $(command -v cadical)"
+
+    - name: Install Sherlock agentcheck
+      shell: bash
+      env:
+        SHERLOCK_REF: ${{ inputs.ref }}
+      run: python -m pip install --quiet "git+https://github.com/Ning0Luo/sherlock.git@${SHERLOCK_REF}"
+
+    - name: Run agentcheck
+      id: run
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        POLICY: ${{ inputs.policy }}
+        CONFIG: ${{ inputs.config }}
+        BEDROCK: ${{ inputs.bedrock }}
+        LLAMASTACK: ${{ inputs.llamastack }}
+        BASE: ${{ inputs.base }}
+        GUARD_ACCESS: ${{ inputs.guard-access }}
+        SHOW_INJECTIONS: ${{ inputs.show-injections }}
+        FAST: ${{ inputs.fast }}
+      run: |
+        set -uo pipefail
+
+        # pick the one source
+        src=()
+        [ -n "$CONFIG" ]     && src+=(--config "$CONFIG")
+        [ -n "$BEDROCK" ]    && src+=(--bedrock "$BEDROCK")
+        [ -n "$LLAMASTACK" ] && src+=(--llamastack "$LLAMASTACK")
+        if [ "${#src[@]}" -eq 0 ]; then
+          echo "::error::set exactly one of config / bedrock / llamastack"; exit 2
+        fi
+        if [ "${#src[@]}" -gt 2 ]; then
+          echo "::error::set exactly one of config / bedrock / llamastack (got more than one)"; exit 2
+        fi
+
+        extra=()
+        [ "$GUARD_ACCESS" = "true" ]    && extra+=(--guard-access)
+        [ "$SHOW_INJECTIONS" = "true" ] && extra+=(--injections)
+        [ "$FAST" = "true" ]            && extra+=(--fast)
+
+        log="$(mktemp)"
+        set +e
+        if [ -n "$BASE" ] && [ -n "$CONFIG" ]; then
+          # gate on NEW attacks: compare the config at BASE to the working tree
+          git fetch --no-tags --depth=1 origin "$BASE" >/dev/null 2>&1 || true
+          old="$(mktemp --suffix=.json)"
+          if git show "${BASE}:${CONFIG}" > "$old" 2>/dev/null; then
+            echo "diff: ${CONFIG} at ${BASE} -> working tree"
+            agentcheck diff "$POLICY" --config "$old" --to "$CONFIG" "${extra[@]}" 2>&1 | tee "$log"
+            rc=${PIPESTATUS[0]}
+          else
+            echo "::notice::${CONFIG} does not exist at ${BASE}; checking it in full"
+            agentcheck check "$POLICY" --config "$CONFIG" "${extra[@]}" 2>&1 | tee "$log"
+            rc=${PIPESTATUS[0]}
+          fi
+        else
+          [ -n "$BASE" ] && echo "::notice::diff mode needs a --config source; running a full check"
+          agentcheck check "$POLICY" "${src[@]}" "${extra[@]}" 2>&1 | tee "$log"
+          rc=${PIPESTATUS[0]}
+        fi
+        set -e
+
+        # surface the report in the PR checks UI
+        if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+          {
+            echo "### Sherlock agentcheck"
+            echo '```'
+            cat "$log"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+        if [ "$rc" -eq 0 ]; then
+          echo "result=pass" >> "$GITHUB_OUTPUT"
+        else
+          echo "result=fail" >> "$GITHUB_OUTPUT"
+          echo "::error::agentcheck found an attack within budget (exit $rc)"
+        fi
+        exit "$rc"

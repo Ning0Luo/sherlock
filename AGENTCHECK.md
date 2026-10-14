@@ -81,7 +81,10 @@ checks whether a finding reproduces when the agents actually run, on a test
 fleet you own: secrets become canary tokens, sinks become local collectors, an
 egress guard blocks any real send, and the untrusted input carries a neutral
 marker. Each finding comes back REPRODUCED, BLOCKED or ERROR, giving a precision
-number over a batch. See `validate/README.md` and `examples/validate/`.
+number over a batch. `python -m validate.scaffold findings.json scenarios.py`
+turns a `check --json` report into one scenario stub per FAIL, with the roles
+filled in, so you only write `run_app`. See `validate/README.md`,
+`validate/PRECISION.md` (the study protocol) and `examples/validate/`.
 
 ## Prompt injection as a budget
 
@@ -91,13 +94,41 @@ steered, which over-reports. You can now reason about it precisely:
 - **Count it.** A policy's budget has a third axis: `tolerate 0 agents, 0 approvals, K injections`. `0 injections` asks "does this hold even if no agent can be fooled?" — a purely structural guarantee. `--injections` on `check` lists the cheapest attack as `(agents hacked, approvals, injections)`, so you see how much it leans on injection.
 - **Rule it out per input.** Mark an input an agent consumes as data, not instructions (`reads_as_data`), and reading it no longer steers the agent. Sound because you assert it; in LangGraph, `metadata={"sherlock": {"reads_as_data": ["messages"]}}`.
 
-`## Access settings and configuration changes
+## Runtime monitoring
+
+The same model runs live. A `Monitor` (`monitor.py`) keeps the observed state --
+which resources already hold attacker content, where secrets have flowed, which
+agents are steered -- and, before an agent acts, asks the solver whether that
+action makes a violation reachable within budget (seeded as the encoding's
+round-0 facts). `probe(agent, reads, writes)` returns a block/allow verdict with
+the attack; `apply(...)` records an observed event. Wire `probe` into a Claude
+Code `PreToolUse` hook, a LangGraph guard or an MCP proxy. See
+`examples/monitor/inbox_guard.py`.
+
+## Access settings and configuration changes
 
 Some agents can edit access settings: permission rules, MCP configs, approval
 lists. `--guard-access` sets aside attacks that need such an edit and marks
 those policies GUARDED. `agentcheck diff` (before a change) and
 `agentcheck watch` (after one) re-check the new configuration and raise an
 ALARM only when the change brings an attack. See `examples/access/README.md`.
+
+## Continuous integration
+
+`agentcheck-action/` is a GitHub Action that runs the check on every pull
+request and fails it when a change introduces an attack within your budget. In
+`diff` mode it gates on new attacks only, so a pre-existing finding does not
+block unrelated PRs. For a LangGraph graph, export it to a config first
+(`examples/ci/export_app.py`). See `agentcheck-action/README.md` and
+`examples/ci/`.
+
+```yaml
+- uses: Ning0Luo/sherlock/agentcheck-action@main
+  with:
+    policy: policies/app.policy
+    config: fleet.json
+    base: ${{ github.event.pull_request.base.sha }}   # fail only on new attacks
+```
 
 ## What Sherlock can read
 
@@ -119,9 +150,10 @@ ALARM only when the change brings an attack. See `examples/access/README.md`.
 
 | What | Suite | Result |
 |---|---|---|
-| SAT vs exhaustive search | `test_sat` 240, `test_policy` 60, `test_openshell` 51, `test_langgraph` 54, `test_trust` 240, `test_ruleoftwo` 236, `test_access` 224, `test_synth` 542, `test_bedrock` 85, `test_strands` 120, `test_llamastack` 234, `test_injection` | no mismatches |
+| SAT vs exhaustive search | `test_sat` 240, `test_policy` 60, `test_openshell` 51, `test_langgraph` 54, `test_trust` 240, `test_ruleoftwo` 236, `test_access` 224, `test_synth` 542, `test_bedrock` 85, `test_strands` 120, `test_llamastack` 234, `test_injection`, `test_monitor` 354 | no mismatches |
 | Web engine vs SAT | demo variants and trust cases | agree |
 | Certificates | | 647 verified; tampered and forged ones are rejected |
+| Runtime monitor / validation | `test_monitor`, `test_validate`, `test_scaffold` | reachability, egress, scaffold |
 | Settings readers | `test_parsers` | 29 checks |
 
 Benchmarks: `bench/LANGGRAPH_BENCH.md` (patterns and scaling) and `bench/realworld/REPORT.md` (26 official LangChain apps; internal, not yet disclosed).

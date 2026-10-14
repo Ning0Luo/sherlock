@@ -1,0 +1,38 @@
+# Copy to .github/workflows/agentcheck.yml in your repo.
+# Gate pull requests on multi-agent collusion: fail only on NEW attacks.
+#
+# Pattern: commit fleet.json (a reviewable snapshot of your graph's rights). CI
+# regenerates it from the live graph and runs `diff` against the PR base, so a
+# change blocks the PR only if it INTRODUCES an attack. A stale committed config
+# also shows up, because CI compares the base snapshot to the fresh export.
+#
+# To gate on ALL attacks instead (e.g. you don't commit the config), drop the
+# `base:` input and `fetch-depth: 0`.
+name: agentcheck
+on:
+  pull_request:
+
+jobs:
+  collusion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # diff mode needs the PR base revision
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Regenerate the committed config from the live graph
+        run: |
+          pip install -e .          # your app and its deps (langgraph, ...)
+          pip install "git+https://github.com/Ning0Luo/sherlock.git@main"
+          python examples/ci/export_app.py my_app:app fleet.json --secrets customer_db
+
+      - name: Check for new collusion
+        uses: Ning0Luo/sherlock/agentcheck-action@main
+        with:
+          policy: policies/app.policy
+          config: fleet.json        # committed at the repo root; CI diffs it against the base
+          base: ${{ github.event.pull_request.base.sha }}

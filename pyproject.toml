@@ -20,7 +20,8 @@ agentcheck = "agentcheck:main"
 
 [tool.setuptools]
 py-modules = ["agentcheck", "collusion", "sat", "policy", "ruleoftwo", "synth",
-              "openshell", "miniyaml", "bedrock", "llamastack", "shield_whatif", "drat_check"]
+              "openshell", "miniyaml", "bedrock", "llamastack", "shield_whatif", "drat_check",
+              "monitor"]
 
 [tool.setuptools.packages.find]
 include = ["integrations*", "validate*"]

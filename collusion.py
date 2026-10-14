@@ -244,20 +244,36 @@ def effective(s: System, approved: frozenset[str] | set[str] = frozenset()):
 def analyze(s: System, coalition: frozenset[str], injection: bool,
             approved: frozenset[str] = frozenset(),
             sources: frozenset[str] | None = None, recruit: bool = True,
-            inject_set: frozenset[str] | None = None) -> Result:
+            inject_set: frozenset[str] | None = None,
+            seed_tainted: frozenset[str] = frozenset(),
+            seed_labels: dict[str, set[str]] | None = None,
+            seed_corrupt: frozenset[str] = frozenset()) -> Result:
     """sources: the untrusted resources the attacker writes (None = all).
     recruit=False: only the coalition acts; no agent is taken over through
     files that steer it (pure collusion among deliberately malicious agents).
     inject_set: if given, only these agents may be prompt-injected (each is one
-    injection the attacker must land); None means any injectable agent can be."""
+    injection the attacker must land); None means any injectable agent can be.
+    seed_*: observed runtime state (for the live monitor) -- resources already
+    holding attacker content, label positions already reached, agents already
+    corrupted. They start the fixpoint, so reachability is asked from where we are now."""
     reads, writes = effective(s, approved)
     data_only = {a: s.matches(ag.reads_as_data) for a, ag in s.agents.items()}
 
     corrupted = {a: "initial coalition" for a in coalition if not s.agents[a].trusted}
+    for a in seed_corrupt:
+        if not s.agents[a].trusted:
+            corrupted.setdefault(a, "already working for the attacker (observed)")
     tainted = {r: "untrusted source" for r, res in s.resources.items()
                if res.untrusted and (sources is None or r in sources)}
+    for r in seed_tainted:
+        if r in s.resources:
+            tainted.setdefault(r, "attacker content observed here")
     labels = {r: {l: "origin" for l in res.labels}
               for r, res in s.resources.items()}
+    for l, rs in (seed_labels or {}).items():
+        for r in rs:
+            if r in labels:
+                labels[r].setdefault(l, "observed here (runtime)")
 
     changed = True
     while changed:
@@ -360,13 +376,14 @@ def witness(s: System, p: Policy, res: Result, target: str) -> list[str]:
     cur = target
     while True:
         why = res.labels[cur][p.label]
-        if why == "origin":
+        if why == "origin" or why.startswith("observed"):   # origin, or seeded runtime state
             break
         agent = why.split()[0]
         src = why.split()[2]
         hops.append((agent, src, cur))
         cur = src
-    lines.append(f"  label {p.label} originates in {cur}")
+    where = "observed at" if res.labels[cur][p.label].startswith("observed") else "originates in"
+    lines.append(f"  label {p.label} {where} {cur}")
     for agent, src, dst in reversed(hops):
         if agent in res.corrupted:
             explain_agent(agent)
